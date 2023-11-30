@@ -1,3 +1,3 @@
 # Seminarska za Računalniško Grafiko
-Platformer game  
+Platform game  
 Rough plan: http://go.bubbl.us/ddb19d/bb3b?/RG_game
