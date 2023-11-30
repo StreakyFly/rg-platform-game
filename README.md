@@ -1,2 +1,2 @@
-# rg-platformer-game
-RG seminarska
+# Seminarska za Računalniško Grafiko
+Platformer game
