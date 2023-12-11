@@ -1,3 +1,10 @@
+
+
+// TODO ##############################################
+// TODO # this is just a test, it should be changed  #
+// TODO ##############################################
+
+
 import { ResizeSystem } from '../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../common/engine/systems/UpdateSystem.js';
 
@@ -12,7 +19,7 @@ const gl = canvas.getContext('webgl2');
 
 const loader = new GLTFLoader();
 
-await loader.load('../Blender/player.gltf');
+await loader.load('assets/models/player.gltf');  // our cool player model
 
 const scene = loader.loadScene(loader.defaultScene);
 if (!scene) {
@@ -41,7 +48,9 @@ document.querySelector('.loader-container').remove();
 
 
 
-import { Pillar } from './src/objects/Pillar.js';
+// TODO another test...
+
+import { Pillar } from './scripts/objects/Pillar.js';
 import { vec3 } from "../lib/gl-matrix-module.js";
 
 const p1 = new Pillar(0.5, [1, 0.4, 0], 2)
