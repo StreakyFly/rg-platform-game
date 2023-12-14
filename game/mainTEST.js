@@ -52,10 +52,12 @@ const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl2');
 
 const loader = new GLTFLoader();
-await loader.load('assets/models/player.gltf');  // our extremely cool player model
+// await loader.load('assets/models/player.gltf');  // our extremely cool player model
+await loader.load('assets/models/level01.gltf');  // first level/scene
 
 // const scene = new Node();
 const scene = loader.loadScene(loader.defaultScene);
+
 
 const camera = new Node();
 camera.addComponent(new Transform({
