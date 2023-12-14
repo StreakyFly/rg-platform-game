@@ -57,6 +57,7 @@ export class FirstPersonController {
         const sin = Math.sin(this.yaw);
         const forward = [-sin, 0, -cos];
         const right = [cos, 0, -sin];
+        const up = [0, 1, 0];
 
         // Map user input to the acceleration vector.
         const acc = vec3.create();
@@ -71,6 +72,13 @@ export class FirstPersonController {
         }
         if (this.keys['KeyA']) {
             vec3.sub(acc, acc, right);
+        }
+        // TODO Space and KeyJ is just a temporary test. Make sure to DELETE!
+        if (this.keys['Space']) {
+            vec3.add(acc, acc, up);
+        }
+        if (this.keys['KeyJ']) {
+            vec3.sub(acc, acc, up);
         }
 
         // Update velocity based on acceleration.

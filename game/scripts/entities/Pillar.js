@@ -1,10 +1,10 @@
 import { vec3 } from '../../../lib/gl-matrix-module.js';
-import { Entity } from '../Entity.js'
+import { Entity } from './Entity.js'
 
 export class Pillar extends Entity {
     distanceTraveled = 0;
     constructor(
-        velocity,  // float
+        velocity,  // float  TODO change velocity to speed, so it receives speed and direction and then calculates velocity from that
         translation,  // [float, float, float]
         travelDistance  // float
     ) {
@@ -14,8 +14,7 @@ export class Pillar extends Entity {
         this.travelDistance = travelDistance;
     }
 
-    move() {  // can only move in one direction
-        // entity movement
+    move() {  // can only move on one axis
         let movement = vec3.create();
         vec3.scale(movement, this.translation, this.velocity);
         vec3.add(this.position, this.position, movement);

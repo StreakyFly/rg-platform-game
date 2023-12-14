@@ -39,7 +39,7 @@ const buffer = gl.createBuffer();
 // Activate the buffer object by binding it to the appropriate target.
 // This buffer will store the data for the vertex attributes, so
 // we bind it to the ARRAY_BUFFER target. Other targets exist for
-// uniform buffer objects and indices.
+// uniform buffer entities and indices.
 gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
 // Transfer the data from the main memory to the GPU memory. Memory
