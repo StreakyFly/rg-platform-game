@@ -22,7 +22,9 @@ import { UpdateSystem } from './common/engine/systems/UpdateSystem.js';
 
 import { FirstPersonController } from "./common/engine/controllers/FirstPersonController.js";
 import { PlayerController } from './game/scripts/PlayerController.js';
-import { vec3 } from './lib/gl-matrix-module.js';
+import {quat, vec3} from './lib/gl-matrix-module.js';
+import {JSONLoader} from "./common/engine/loaders/JSONLoader.js";
+import {ImageLoader} from "./common/engine/loaders/ImageLoader.js";
 
 
 
@@ -32,40 +34,64 @@ let scene, renderer, camera;
 async function start() {
     const loader = new GLTFLoader();
 
-    // await loader.load('./game/assets/models/player.gltf');
+    await loader.load('./game/assets/models/player.gltf');
 
-    await loader.load('./game/assets/models/level01.gltf');
+    // await loader.load('./game/assets/models/level01.gltf');
     scene = await loader.loadScene(loader.defaultScene);
-    // camera = await loader.loadNode('Camera');
 
     camera = new Node();
     camera.addComponent(new Transform({
-        translation: [12, 0, 10],
+        translation: [-5, 0, 1]
     }));
+    camera.addComponent(new Transform({
+        rotation: [0, -0.6, 0, 0.7071]
+}));
     camera.addComponent(new Camera({
         near: 0.05,
         far: 100,
     }));
 
+    // far from good, but it works (for now)
+    const player = loader.loadNode('Player');
+    // stairs = loader.loadNode('Stairs');
+    // stairs.addComponent(new FirstPersonController(stairs, canvas));
+    player.addComponent(new FirstPersonController(player, canvas));
+    camera.addComponent(new FirstPersonController(camera, canvas));
+    scene.addChild(camera);
 
-    // // const playerController = new PlayerController();
-    // camera.addComponent(new FirstPersonController(camera, canvas));
-    // scene.addChild(camera);
-    // // scene.addChild(player);
-
-    const stairs = loader.loadNode('Stairs');
-    stairs.addComponent(new FirstPersonController(stairs, canvas));
 
 
-    // const transform = cube.getComponentOfType(Transform);
-    // vec3.lerp(transform.translation, startPosition, endPosition, EasingFunctions.bounceEaseOut(time));
-
+    const floor = new Node();
+    floor.addComponent(new Transform({
+        scale: [10, 1, 10],
+        translation: [0, -1, 0],
+        rotation: [0, 0, 0, 1]
+    }));
+    floor.addComponent(new Model({
+        primitives: [
+            new Primitive({
+                mesh: await new JSONLoader().loadMesh('./common/models/floor.json'),
+                material: new Material({
+                    baseTexture: new Texture({
+                        image: await new ImageLoader().load('./common/images/grass.png'),
+                        sampler: new Sampler({
+                            minFilter: 'nearest',
+                            magFilter: 'nearest',
+                        }),
+                    }),
+                }),
+            }),
+        ],
+    }));
+    scene.addChild(floor);
 
 
 
     if (!scene || !camera) {
         throw new Error('Scene or Camera not present in glTF');
     }
+
+    const stairs = loader.loadNode('Stairs');
 
     renderer = new UnlitRenderer(gl);
 

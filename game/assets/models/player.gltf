@@ -31,7 +31,7 @@
 		},
 		{
 			"mesh":0,
-			"name":"Geometry",
+			"name":"Player",
 			"scale":[
 				0.3154386579990387,
 				0.9999959468841553,
@@ -46,10 +46,10 @@
 	],
 	"cameras":[
 		{
-			"name":"Camera.001",
+			"name":"Camera",
 			"perspective":{
 				"aspectRatio":1.7777777777777777,
-				"yfov":0.39959651231765747,
+				"yfov":0.48301205039024353,
 				"zfar":100,
 				"znear":0.10000000149011612
 			},
@@ -71,7 +71,7 @@
 	],
 	"meshes":[
 		{
-			"name":"Geometry.001",
+			"name":"Player",
 			"primitives":[
 				{
 					"attributes":{
