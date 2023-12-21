@@ -1,21 +1,36 @@
 import { mat4 } from '../../../lib/gl-matrix-module.js';
 
+
+export const cameraView = {
+    "2D": "2D",
+    "3D": "3D"
+}
+
+
 export class Camera {
+    view = cameraView["3D"];
 
     constructor({
-        orthographic = 0,
-        aspect = 1,
-        fovy = 1,
-        halfy = 1,
-        near = 1,
-        far = 100,
-    } = {}) {
+                    orthographic = 0,
+                    aspect = 1,
+                    fovy = 1,
+                    halfy = 1,
+                    near = 1,
+                    far = 100,
+                } = {}) {
         this.orthographic = orthographic;
         this.aspect = aspect;
         this.fovy = fovy;
         this.halfy = halfy;
         this.near = near;
         this.far = far;
+    }
+
+    changeView(pView) {
+        if (!(pView in cameraView)) {
+            throw new Error("Invalid camera view.");
+        }
+        this.view = pView;
     }
 
     get projectionMatrix() {
@@ -42,5 +57,4 @@ export class Camera {
         const { fovy, aspect, near, far } = this;
         return mat4.perspective(mat4.create(), fovy, aspect, near, far);
     }
-
 }

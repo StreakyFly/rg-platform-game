@@ -23,7 +23,6 @@ import { UpdateSystem } from './common/engine/systems/UpdateSystem.js';
 import { JSONLoader } from "./common/engine/loaders/JSONLoader.js";
 import { ImageLoader } from "./common/engine/loaders/ImageLoader.js";
 import { Player } from "./game/scripts/Player.js";
-import { MainCamera } from "./game/scripts/MainCamera.js";
 
 
 
@@ -40,17 +39,17 @@ async function start() {
 
 
 
-//     camera = new Node();
-//     camera.addComponent(new Transform({
-//         translation: [0, 3, 15]
-//     }));
-//     camera.addComponent(new Transform({
-//         rotation: [-0.2, 0, 0, 0.7071]
-// }));
-//     camera.addComponent(new Camera({
-//         near: 0.05,
-//         far: 100,
-//     }));
+    camera = new Node();
+    camera.addComponent(new Transform({
+        translation: [0, 3, 15]
+    }));
+    camera.addComponent(new Transform({
+        rotation: [-0.2, 0, 0, 0.7071]
+}));
+    camera.addComponent(new Camera({
+        near: 0.05,
+        far: 100,
+    }));
 
 
 
@@ -60,27 +59,9 @@ async function start() {
 // //     scene.addChild(camera);
 
 
-
-
-
     const playerModel = loader.loadNode('Player');
     playerModel.addComponent(new Player(playerModel, canvas));
 
-
-
-
-    camera = new Node()
-    const playerCamera = new MainCamera({
-        near: 0.05,
-        far: 100,
-    });
-
-    // playerCamera.changeView("3D");
-    camera.addComponent(playerCamera);
-
-    camera.addComponent(new Transform({
-        rotation: [-0.2, 0, 0, 0.7071]
-    }));
 
     playerModel.addChild(camera);
     scene.addChild(playerModel);
@@ -143,7 +124,7 @@ function render() {
 }
 
 function resize({ displaySize: { width, height }}) {
-    camera.getComponentOfType(MainCamera).aspect = width / height;
+    camera.getComponentOfType(Camera).aspect = width / height;
 }
 
 

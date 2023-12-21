@@ -1,12 +1,12 @@
 import { quat, vec3, mat4 } from '../../lib/gl-matrix-module.js';
 import { Transform } from '../../common/engine/core/Transform.js';
-// import { MainCamera } from "../MainCamera.js";
+// import { Camera } from "../Camera.js";
 
 
 export class Player {
     doubleJump = false;
     spaceDown = false;
-    // playerCamera = new MainCamera();
+    // playerCamera = new Camera();
 
     constructor(node, domElement, {
         pitch = 0,
