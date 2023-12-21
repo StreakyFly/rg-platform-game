@@ -8,10 +8,10 @@ import {
     Texture,
     Transform,
 } from './common/engine/core.js';
-
 import { GLTFLoader } from './common/engine/loaders/GLTFLoader.js';
 import { UnlitRenderer } from './common/engine/renderers/UnlitRenderer.js';
 import { ResizeSystem } from './common/engine/systems/ResizeSystem.js';
+
 import { UpdateSystem } from './common/engine/systems/UpdateSystem.js';
 
 // import { idle_animation_LR, idle_animation_DR } from './game/assets/animations/idleAnimation.js';
@@ -20,11 +20,11 @@ import { UpdateSystem } from './common/engine/systems/UpdateSystem.js';
 // import { Krog_rotation, Platform_movement, Ability_movement } from './game/assets/animations/levelAnimations.js';
 
 
-import { FirstPersonController } from "./common/engine/controllers/FirstPersonController.js";
-import { PlayerController } from './game/scripts/PlayerController.js';
-import {quat, vec3} from './lib/gl-matrix-module.js';
+// import { FirstPersonController } from "./common/engine/controllers/FirstPersonController.js";
+// import {quat, vec3} from './lib/gl-matrix-module.js';
 import {JSONLoader} from "./common/engine/loaders/JSONLoader.js";
 import {ImageLoader} from "./common/engine/loaders/ImageLoader.js";
+import {Player} from "./game/scripts/entities/Player.js";
 
 
 
@@ -41,23 +41,32 @@ async function start() {
 
     camera = new Node();
     camera.addComponent(new Transform({
-        translation: [-5, 0, 1]
+        translation: [0, 3, 15]
     }));
     camera.addComponent(new Transform({
-        rotation: [0, -0.6, 0, 0.7071]
+        rotation: [-0.2, 0, 0, 0.7071]
 }));
     camera.addComponent(new Camera({
         near: 0.05,
         far: 100,
     }));
 
-    // far from good, but it works (for now)
-    const player = loader.loadNode('Player');
-    // stairs = loader.loadNode('Stairs');
-    // stairs.addComponent(new FirstPersonController(stairs, canvas));
-    player.addComponent(new FirstPersonController(player, canvas));
-    camera.addComponent(new FirstPersonController(camera, canvas));
-    scene.addChild(camera);
+
+// //     // far from good, but it works (for now)
+// //     const player = loader.loadNode('Player');
+// //     // stairs.addComponent(new FirstPersonController(stairs, canvas));
+// //     player.addComponent(new FirstPersonController(player, canvas));
+// //     camera.addComponent(new FirstPersonController(camera, canvas));
+// //     scene.addChild(camera);
+
+
+
+    const playerModel = loader.loadNode('Player');
+    playerModel.addComponent(new Player(playerModel, canvas));
+
+
+
+
 
 
 
