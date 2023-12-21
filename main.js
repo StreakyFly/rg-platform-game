@@ -18,13 +18,12 @@ import { UpdateSystem } from './common/engine/systems/UpdateSystem.js';
 // import { Dnoga_movement, Droka_movement, Lnoga_movement, Lroka_movement, abilityAinm } from './game/assets/animations/playerAnimations.js'
 // import { Physics } from './Physics.js';
 // import { Krog_rotation, Platform_movement, Ability_movement } from './game/assets/animations/levelAnimations.js';
-
-
-// import { FirstPersonController } from "./common/engine/controllers/FirstPersonController.js";
 // import {quat, vec3} from './lib/gl-matrix-module.js';
-import {JSONLoader} from "./common/engine/loaders/JSONLoader.js";
-import {ImageLoader} from "./common/engine/loaders/ImageLoader.js";
-import {Player} from "./game/scripts/entities/Player.js";
+
+import { JSONLoader } from "./common/engine/loaders/JSONLoader.js";
+import { ImageLoader } from "./common/engine/loaders/ImageLoader.js";
+import { Player } from "./game/scripts/entities/Player.js";
+import { MainCamera } from "./game/scripts/MainCamera.js";
 
 
 
@@ -39,6 +38,8 @@ async function start() {
     // await loader.load('./game/assets/models/level01.gltf');
     scene = await loader.loadScene(loader.defaultScene);
 
+
+
     camera = new Node();
     camera.addComponent(new Transform({
         translation: [0, 3, 15]
@@ -52,8 +53,9 @@ async function start() {
     }));
 
 
-// //     // far from good, but it works (for now)
-// //     const player = loader.loadNode('Player');
+
+
+
 // //     // stairs.addComponent(new FirstPersonController(stairs, canvas));
 // //     player.addComponent(new FirstPersonController(player, canvas));
 // //     camera.addComponent(new FirstPersonController(camera, canvas));
@@ -66,7 +68,20 @@ async function start() {
 
 
 
+    // camera = new Node()
+    // const playerCamera = new MainCamera();
+    // // mainCamera.changeView("3D");
+    // camera.addComponent(playerCamera);
+    // scene.addChild(camera);
 
+
+    // camera = new Node()
+    // const playerCamera = new MainCamera();
+    // // mainCamera.changeView("3D");
+    // camera.addComponent(playerCamera);
+    //
+    // playerModel.addComponent(camera);
+    // scene.addChild(playerModel);
 
 
 

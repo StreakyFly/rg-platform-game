@@ -1,8 +1,13 @@
 import { quat, vec3, mat4 } from '../../../lib/gl-matrix-module.js';
 import { Transform } from '../../../common/engine/core/Transform.js';
+import { MainCamera } from "../MainCamera.js";
 
 
 export class Player {
+    doubleJump = false;
+    spaceDown = false;
+    playerCamera = new MainCamera();
+
     constructor(node, domElement, {
         pitch = 0,
         yaw = 0,
@@ -12,7 +17,7 @@ export class Player {
         decay = 0.99999,
         pointerSensitivity = 0.002,
         jumpSpeed = 5,
-        gravity = -20
+        gravity = -20,
     } = {}) {
         this.node = node;
         this.domElement = domElement;
@@ -37,7 +42,7 @@ export class Player {
     }
 
     initHandlers() {
-        // this.pointermoveHandler = this.pointermoveHandler.bind(this);
+        this.pointermoveHandler = this.pointermoveHandler.bind(this);
         this.keydownHandler = this.keydownHandler.bind(this);
         this.keyupHandler = this.keyupHandler.bind(this);
 
@@ -79,7 +84,6 @@ export class Player {
         if (this.keys['KeyA']) {
             vec3.sub(acc, acc, right);
         }
-        // TODO Space and KeyJ is just a temporary test. Make sure to DELETE!
         if (this.keys['Space']) {
             this.jumpHandler();
         }
@@ -123,6 +127,9 @@ export class Player {
             if (this.node.getComponentOfType(Transform).translation[1] <= 0) {
                 this.node.getComponentOfType(Transform).translation[1] = 0;
                 this.isJumping = false;
+                if (this.doubleJump) {
+                    this.doubleJump = false;
+                }
                 this.velocityY = 0;
             }
         }
@@ -132,29 +139,18 @@ export class Player {
         if (!this.isJumping) {
             this.isJumping = true;
             this.velocityY = this.jumpSpeed;
+            this.spaceDown = true;
+        } else if (!this.spaceDown && !this.doubleJump) {
+            this.doubleJump = true;
+            this.isJumping = true;
+            this.velocityY = this.jumpSpeed;
         }
+
+
     }
 
     pointermoveHandler(e) {
         const dx = e.movementX;
-        const dy = e.movementY;
-
-        this.pitch -= dy * this.pointerSensitivity;
-        this.yaw   -= dx * this.pointerSensitivity;
-
-        const twopi = Math.PI * 2;
-        const halfpi = Math.PI / 2;
-
-        this.pitch = Math.min(Math.max(this.pitch, -halfpi), halfpi);
-        this.yaw = ((this.yaw % twopi) + twopi) % twopi;
-    }
-
-
-    pointermoveHandler(e) {
-        const dx = e.movementX;
-        const dy = e.movementY;
-
-        this.pitch -= dy * this.pointerSensitivity;
         this.yaw   -= dx * this.pointerSensitivity;
 
         const twopi = Math.PI * 2;
@@ -170,6 +166,9 @@ export class Player {
 
     keyupHandler(e) {
         this.keys[e.code] = false;
+        if (e.code === 'Space') {
+            this.spaceDown = false;
+        }
     }
 
 }
