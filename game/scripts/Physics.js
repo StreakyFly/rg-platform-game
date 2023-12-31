@@ -5,11 +5,14 @@ import { Transform } from '../../common/engine/core.js';
 
 export class Physics {
 
-    constructor(scene) {
+    constructor(scene=null) {
         this.scene = scene;
     }
 
     update(t, dt) {
+        if (this.scene === null) {
+            console.error("You cannot use physics.update() without providing a scene when initializing this Physics object.")
+        }
         this.scene.traverse(node => {
             if (node.isDynamic) {
                 this.scene.traverse(other => {
