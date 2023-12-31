@@ -15,13 +15,13 @@
 	"nodes":[
 		{
 			"mesh":0,
-			"name":"Player"
+			"name":"Pillar"
 		}
 	],
 	"materials":[
 		{
 			"doubleSided":true,
-			"name":"Material.011",
+			"name":"Material.009",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
 					"index":0
@@ -33,7 +33,7 @@
 	],
 	"meshes":[
 		{
-			"name":"Player.008",
+			"name":"Cube.002",
 			"primitives":[
 				{
 					"attributes":{
@@ -56,69 +56,69 @@
 	"images":[
 		{
 			"mimeType":"image/jpeg",
-			"name":"green-black_cool",
-			"uri":"green-black_cool.jpg"
+			"name":"green-black_cool_jpg",
+			"uri":"green-black_cool_jpg.jpg"
 		}
 	],
 	"accessors":[
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":7040,
+			"count":176,
 			"max":[
-				0.3495308458805084,
-				0.4991611838340759,
-				0.15006503462791443
+				0.5,
+				3,
+				0.5000000596046448
 			],
 			"min":[
-				-0.3504691421985626,
-				-0.000838833162561059,
-				-0.14993496239185333
+				-0.5,
+				0,
+				-0.4999999403953552
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":7040,
+			"count":176,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":7040,
+			"count":176,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5123,
-			"count":9438,
+			"count":228,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":84480,
+			"byteLength":2112,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":84480,
-			"byteOffset":84480,
+			"byteLength":2112,
+			"byteOffset":2112,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":56320,
-			"byteOffset":168960,
+			"byteLength":1408,
+			"byteOffset":4224,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":18876,
-			"byteOffset":225280,
+			"byteLength":456,
+			"byteOffset":5632,
 			"target":34963
 		}
 	],
@@ -130,8 +130,8 @@
 	],
 	"buffers":[
 		{
-			"byteLength":244156,
-			"uri":"player.bin"
+			"byteLength":6088,
+			"uri":"pillar.bin"
 		}
 	]
 }

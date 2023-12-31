@@ -49,6 +49,9 @@ scene.traverse(node => {
     }
 
     const boxes = model.primitives.map(primitive => calculateAxisAlignedBoundingBox(primitive.mesh));
+    console.log(node.aabb);
+    console.log(boxes[0].min);
+    console.log(boxes[0].max);
     node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
 });
 

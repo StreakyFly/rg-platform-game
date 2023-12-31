@@ -1,0 +1,14 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\common\\engine",
+    "\\common\\models",
+    "\\game",
+    "\\game\\assets",
+    "\\game\\assets\\models",
+    "\\game\\scripts",
+    "\\game\\scripts\\entities"
+  ],
+  "SelectedNode": "\\game\\scripts\\entities\\Pillar.js",
+  "PreviewInSolutionExplorer": false
+}

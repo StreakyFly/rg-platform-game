@@ -15,13 +15,13 @@
 	"nodes":[
 		{
 			"mesh":0,
-			"name":"Player"
+			"name":"Floor"
 		}
 	],
 	"materials":[
 		{
 			"doubleSided":true,
-			"name":"Material.011",
+			"name":"Material.012",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
 					"index":0
@@ -33,7 +33,7 @@
 	],
 	"meshes":[
 		{
-			"name":"Player.008",
+			"name":"Cube.011",
 			"primitives":[
 				{
 					"attributes":{
@@ -64,61 +64,61 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":7040,
+			"count":24,
 			"max":[
-				0.3495308458805084,
-				0.4991611838340759,
-				0.15006503462791443
+				0.25,
+				-1.4901162970204496e-08,
+				0.25
 			],
 			"min":[
-				-0.3504691421985626,
-				-0.000838833162561059,
-				-0.14993496239185333
+				-0.25,
+				-0.10000002384185791,
+				-0.25
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":7040,
+			"count":24,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":7040,
+			"count":24,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5123,
-			"count":9438,
+			"count":36,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":84480,
+			"byteLength":288,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":84480,
-			"byteOffset":84480,
+			"byteLength":288,
+			"byteOffset":288,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":56320,
-			"byteOffset":168960,
+			"byteLength":192,
+			"byteOffset":576,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":18876,
-			"byteOffset":225280,
+			"byteLength":72,
+			"byteOffset":768,
 			"target":34963
 		}
 	],
@@ -130,8 +130,8 @@
 	],
 	"buffers":[
 		{
-			"byteLength":244156,
-			"uri":"player.bin"
+			"byteLength":840,
+			"uri":"floor.bin"
 		}
 	]
 }

@@ -11,105 +11,109 @@ import {
 import { GLTFLoader } from './common/engine/loaders/GLTFLoader.js';
 import { UnlitRenderer } from './common/engine/renderers/UnlitRenderer.js';
 import { ResizeSystem } from './common/engine/systems/ResizeSystem.js';
-
 import { UpdateSystem } from './common/engine/systems/UpdateSystem.js';
 
-// import { idle_animation_LR, idle_animation_DR } from './game/assets/animations/idleAnimation.js';
-// import { Dnoga_movement, Droka_movement, Lnoga_movement, Lroka_movement, abilityAinm } from './game/assets/animations/playerAnimations.js'
-// import { Physics } from './Physics.js';
-// import { Krog_rotation, Platform_movement, Ability_movement } from './game/assets/animations/levelAnimations.js';
-// import {quat, vec3} from './lib/gl-matrix-module.js';
+import { Physics } from './game/scripts/Physics.js';
+import { calculateAxisAlignedBoundingBox, mergeAxisAlignedBoundingBoxes } from "./common/engine/core/MeshUtils.js";
 
 import { JSONLoader } from "./common/engine/loaders/JSONLoader.js";
 import { ImageLoader } from "./common/engine/loaders/ImageLoader.js";
 import { Player } from "./game/scripts/Player.js";
+import { quat, mat4, vec3 } from './lib/gl-matrix-module.js';
 
 
 
-
-let scene, renderer, camera;
+let scene, renderer, mainCamera;
 
 async function start() {
     const loader = new GLTFLoader();
+    await loader.load('./game/assets/models/platform.gltf');
 
-    await loader.load('./game/assets/models/player.gltf');
+    scene = loader.loadScene(loader.defaultScene);
 
-    // await loader.load('./game/assets/models/level01.gltf');
-    scene = await loader.loadScene(loader.defaultScene);
+    // initialize camera
+    mainCamera = loader.loadNode('Camera');
+    // mainCamera.addComponent(new Transform({
+    //     translation: [0, 1, 0],
+    // }));
 
-
-
-    camera = new Node();
-    camera.addComponent(new Transform({
-        translation: [0, 3, 15]
-    }));
-    camera.addComponent(new Transform({
-        rotation: [-0.2, 0, 0, 0.7071]
-}));
-    camera.addComponent(new Camera({
-        near: 0.05,
-        far: 100,
-    }));
+    mainCamera.getComponentOfType(Camera).fovy = 1;
+    mainCamera.getComponentOfType(Camera).near = 0.1;
+    mainCamera.getComponentOfType(Camera).aspect = 0.3 / 0.5;
 
 
+    // initialize player
+    const playerNode = loader.loadNode('Player.007');
 
-// //     // stairs.addComponent(new FirstPersonController(stairs, canvas));
-// //     player.addComponent(new FirstPersonController(player, canvas));
-// //     camera.addComponent(new FirstPersonController(camera, canvas));
-// //     scene.addChild(camera);
+    const playerTransform = playerNode.getComponentOfType(Transform);
+    playerNode.addComponent(new Player(playerTransform, mainCamera, playerNode, canvas));
+    playerNode.isDynamic = true;
+    playerNode.aabb = {
+        min: [-0.2, -0.2, -0.2],
+        max: [0.2, 0.2, 0.2],
+    };
 
-
-    const playerModel = loader.loadNode('Player');
-    playerModel.addComponent(new Player(playerModel, canvas));
-
-
-    playerModel.addChild(camera);
-    scene.addChild(playerModel);
-
+    scene.addChild(playerNode);
 
 
+    // mainCamera = loader.loadNode('Camera');
+    // mainCamera.addComponent(new FirstPersonController(mainCamera, canvas));
+    // mainCamera.isDynamic = true;
+    // mainCamera.aabb = {
+    //     min: [-0.2, -0.2, -0.2],
+    //     max: [0.2, 0.2, 0.2],
+    // };
 
+    scene.traverse(node => {
+        if(node.getComponentOfType(Model) !== undefined) {
+            node.isStatic = true;
+        }
+    });
+    playerNode.isStatic = false;
+    playerNode.isDynamic = true;
 
-
-    const floor = new Node();
-    floor.addComponent(new Transform({
-        scale: [10, 1, 10],
-        translation: [0, -1, 0],
-        rotation: [0, 0, 0, 1]
-    }));
-    floor.addComponent(new Model({
-        primitives: [
-            new Primitive({
-                mesh: await new JSONLoader().loadMesh('./common/models/floor.json'),
-                material: new Material({
-                    baseTexture: new Texture({
-                        image: await new ImageLoader().load('./common/images/grass.png'),
-                        sampler: new Sampler({
-                            minFilter: 'nearest',
-                            magFilter: 'nearest',
-                        }),
-                    }),
-                }),
-            }),
-        ],
-    }));
-    scene.addChild(floor);
-
-
-
-    if (!scene || !camera) {
+    if (!scene || !mainCamera) {
         throw new Error('Scene or Camera not present in glTF');
     }
 
-    // const stairs = loader.loadNode('Stairs');
-
     renderer = new UnlitRenderer(gl);
-
-    renderer.render(scene, camera);
+    render();
 
     new ResizeSystem({ canvas, resize }).start();
     new UpdateSystem({ update, render }).start();
 }
+
+// async function start() {
+//     const loader = new GLTFLoader();
+//     await loader.load('./examples/04-collision/01-aabb-aabb/scene/scene.gltf');
+//
+//     scene = loader.loadScene(loader.defaultScene);
+//     mainCamera = loader.loadNode('Camera');
+//     mainCamera.addComponent(new FirstPersonController(mainCamera, canvas));
+//     mainCamera.isDynamic = true;
+//     mainCamera.aabb = {
+//         min: [-0.2, -0.2, -0.2],
+//         max: [0.2, 0.2, 0.2],
+//     };
+//
+//     loader.loadNode('Box.000').isStatic = true;
+//     loader.loadNode('Box.001').isStatic = true;
+//     loader.loadNode('Box.002').isStatic = true;
+//     loader.loadNode('Box.003').isStatic = true;
+//     loader.loadNode('Box.004').isStatic = true;
+//     loader.loadNode('Box.005').isStatic = true;
+//     loader.loadNode('Wall.000').isStatic = true;
+//     loader.loadNode('Wall.001').isStatic = true;
+//     loader.loadNode('Wall.002').isStatic = true;
+//     loader.loadNode('Wall.003').isStatic = true;
+//
+//     renderer = new UnlitRenderer(gl);
+//     render();
+//
+//     new ResizeSystem({ canvas, resize }).start();
+//     new UpdateSystem({ update, render }).start();
+// }
+
 
 function update(time, dt) {
     scene.traverse(node => {
@@ -117,19 +121,33 @@ function update(time, dt) {
             component.update?.(time, dt);
         }
     });
+    physics.update(time, dt);
 }
 
 function render() {
-    renderer.render(scene, camera);
+    renderer.render(scene, mainCamera);
 }
+
 
 function resize({ displaySize: { width, height }}) {
-    camera.getComponentOfType(Camera).aspect = width / height;
+    mainCamera.getComponentOfType(Camera).aspect = width / height;
 }
-
 
 const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl2');
 
 await start()
+
+const physics = new Physics(scene);
+
+scene.traverse(node => {
+    const model = node.getComponentOfType(Model);
+    if (!model) {
+        return;
+    }
+
+    const boxes = model.primitives.map(primitive => calculateAxisAlignedBoundingBox(primitive.mesh));
+    node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
+});
+
 document.querySelector('.loader-container').remove();
