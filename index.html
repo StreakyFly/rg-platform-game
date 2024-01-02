@@ -12,11 +12,17 @@
   <script type="module" src="main.js"></script>
 </head>
 <body>
-<div class="fullscreen no-touch">
-  <canvas class="pixelated"></canvas>
-</div>
-<div class="fullscreen overlay loader-container">
-  <div class="loader"></div>
-</div>
+  <div id="mainMenu" class="main-menu">
+    <h1>Medieval Game</h1>
+    <button onclick="startGame()">Start Game</button>
+    <button onclick="openSettings()">Settings</button>
+    <button onclick="exitGame()">Exit</button>
+  </div>
+  <div class="fullscreen no-touch">
+    <canvas class="pixelated"></canvas>
+  </div>
+  <div class="fullscreen overlay loader-container">
+  </div>
 </body>
+
 </html>
