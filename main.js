@@ -9,8 +9,6 @@ window.startGame = startGame;
 window.openSettings = openSettings;
 window.openMap = openMap;
 
-let loadingScreen;
-
 
 function startGame() {
     showLoadingScreen();
