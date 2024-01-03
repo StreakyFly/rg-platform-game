@@ -3,28 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Game</title>
-
+  <link rel="icon" type="image/x-icon" href="./game/assets/screens/favicon.png">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caudex&display=swap">
+  <link href='https://fonts.googleapis.com/css?family=MedievalSharp' rel='stylesheet'>
   <link rel="stylesheet" href="style/game.css">
   <link rel="stylesheet" href="style/main-menu.css">
-
   <script src="lib/gl-matrix-min.js"></script>
   <script type="module" src="main.js"></script>
 </head>
 <body>
-<div id="mainMenu" class="main-menu">
-  <h1>Medieval Game</h1>
-  <button onclick="startGame()">Start</button>
-  <button onclick="openMap()">Map</button>
-  <button onclick="openSettings()">Settings</button>
-</div>
-<div class="fullscreen no-touch">
-  <canvas class="pixelated"></canvas>
-</div>
-<div class="fullscreen overlay loader-container">
-</div>
+  <div id="mainMenu" class="main-menu">
+    <img id="gameName" src="./game/assets/screens/gameName.png" alt="FortScape">
+    <br><br><br><br>
+    <button onclick="startGame()">Start</button>
+    <button onclick="openMap()">Map</button>
+    <button onclick="openSettings()">Settings</button>
+  </div>
+  <div class="fullscreen no-touch">
+    <canvas class="pixelated"></canvas>
+  </div>
+  <div class="fullscreen overlay loader-container">
+  </div>
 </body>
-
 </html>

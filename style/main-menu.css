@@ -2,9 +2,12 @@ body, html {
     font-family: 'Caudex', sans-serif;
     margin: 0;
     padding: 0;
-
     background-image: url('../game/assets/screens/main-menu.png');
     background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 100%;
+    width: 100%;
 }
 
 .main-menu {
@@ -18,24 +21,32 @@ body, html {
     transform: translate(-50%, -50%);
 }
 
-.main-menu h1 {
-    font-family: 'Caudex', sans-serif;
-    font-size: 48px;
-    color: #000000;
-}
-
 .main-menu button {
     font-family: 'Caudex', sans-serif;
     font-size: 32px;
     margin-bottom: 32px;
     padding: 10px 20px;
-    background-color: #6c340c;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    background: url("../game/assets/screens/button-texture.png") repeat scroll 0 0 transparent;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .main-menu button:hover {
-    background-color: #854314;
+    background-color: #a9a099;
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3), 0 0 10px red, 0 0 15px orange, 0 0 20px yellow;
+    animation: fire-glow 1s infinite alternate;
+}
+
+/* fire effect */
+@keyframes fire-glow {
+    0% {
+        box-shadow: 0 5px 5px rgba(0,0,0,0.3), 0 0 5px red, 0 0 10px orange, 0 0 15px yellow;
+    }
+    100% {
+        box-shadow: 0 5px 5px rgba(0,0,0,0.3), 0 0 12px red, 0 0 12px orange, 0 0 17px yellow;
+    }
 }

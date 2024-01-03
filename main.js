@@ -9,7 +9,6 @@ window.startGame = startGame;
 window.openSettings = openSettings;
 window.openMap = openMap;
 
-
 function startGame() {
     showLoadingScreen();
 
@@ -31,22 +30,18 @@ function startGame() {
         });
 }
 
-
 function openSettings() {
     console.log("Open Settings function has not been written yet!");
 
 }
 
-
 function openMap() {
     console.log("Open Map function has not been written yet!");
 }
 
-
 function showLoadingScreen() {
     // TODO show random image/loading screen with a tip
 }
-
 
 function hideLoadingScreen() {
     // TODO hide loading screen
