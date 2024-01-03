@@ -26,7 +26,7 @@ const server = http.createServer(async (req, res) => {
     const rootPath = path.join(__dirname, '..');
     let filePath = path.join(rootPath, requestPath);
     if (filePath.endsWith(path.sep)) {
-        filePath = path.join(filePath, 'examplesIndex.html');
+        filePath = path.join(filePath, '_indexExample.html');
     }
 
     // get an appropriate Content-Type

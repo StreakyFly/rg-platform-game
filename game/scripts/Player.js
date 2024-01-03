@@ -1,6 +1,5 @@
 import { quat, vec3 } from '../../lib/gl-matrix-module.js';
 import { Transform } from '../../common/engine/core/Transform.js';
-import { getGlobalModelMatrix } from "../../common/engine/core/SceneUtils.js";
 import { Physics } from "./Physics.js";
 
 
@@ -44,7 +43,7 @@ export class Player {
 
         this.physics = new Physics();
 
-        this.spiderManJump = false;
+        this.spiderManJump = true;
 
         this.initHandlers();
     }
@@ -215,7 +214,7 @@ export class Player {
 
             if (this.checkCollision(player, object)) {
                 const distanceBetweenPlayersBottomAndObjectsTop = this.physics.getTransformedAABB(object).max[1] - this.playerTransform.translation[1];
-                if (this.spiderManJump || Math.abs(distanceBetweenPlayersBottomAndObjectsTop) < 0.01) {  // Math.abs not necessary
+                if (this.spiderManJump || Math.abs(distanceBetweenPlayersBottomAndObjectsTop) < 0.01) {  // Math.abs not necessary afaik (wasn't tested without though)
                     return true;
                 }
             }
@@ -258,5 +257,4 @@ export class Player {
             this.attemptDoubleJump = false;
         }
     }
-
 }
