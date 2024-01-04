@@ -8,9 +8,12 @@ import {
     Texture,
     Transform,
 } from '../../common/engine/core.js';
+
 import { pause } from '../../main.js';
+
+import { JSONLoader } from "../../common/engine/loaders/JSONLoader.js";
+import { ImageLoader } from "../../common/engine/loaders/ImageLoader.js";
 import { GLTFLoader } from '../../common/engine/loaders/GLTFLoader.js';
-import { UnlitRenderer } from '../../common/engine/renderers/UnlitRenderer.js';
 import { ResizeSystem } from '../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../common/engine/systems/UpdateSystem.js';
 import { calculateAxisAlignedBoundingBox, mergeAxisAlignedBoundingBoxes } from "../../common/engine/core/MeshUtils.js";
@@ -19,15 +22,18 @@ import { Physics } from './Physics.js';
 import { Player } from "./Player.js";
 import { Entity } from "./entities/Entity.js";
 
+import { Renderer } from "./Renderer.js";
+
 
 export class Game {
     constructor() {
-        this.scene = null;
-        this.renderer = null;
-        this.mainCamera = null;
-        this.physics = null;
         this.canvas = document.querySelector('canvas');
         this.gl = this.canvas.getContext('webgl2');
+        this.renderer = new Renderer(this.gl);
+        this.scene = null;
+        this.camera = null;
+        this.physics = null;
+        this.skybox = null;
     }
 
     async start() {
@@ -41,7 +47,6 @@ export class Game {
         for (const trap of traps){
             this.scene.children[trap.mesh].isTrap = true;
         }
-
 
         // testing
         const movingTraps = loader.gltf.nodes.filter(element => element.name.includes("Moving"));
@@ -61,21 +66,22 @@ export class Game {
             let movingTrapTranslation = [0.002, 0, 0];
             const maxTranslationDistance = 1;
             movingTrapNode.addComponent(new Entity(movingTrapTransform, movingTrapTranslation, maxTranslationDistance));
-        }   
+        }
 
         // initialize camera
-        this.mainCamera = loader.loadNode('Camera');
-        // mainCamera.addComponent(new Transform({
+        this.camera = loader.loadNode('Camera');
+        // camera.addComponent(new Transform({
         //     translation: [0, 1, 0],
         // }));
-        this.mainCamera.getComponentOfType(Camera).fovy = 1;
-        this.mainCamera.getComponentOfType(Camera).near = 0.1;
-        this.mainCamera.getComponentOfType(Camera).aspect = 0.3 / 0.5;
+
+        this.camera.getComponentOfType(Camera).fovy = 1;
+        this.camera.getComponentOfType(Camera).near = 0.1;
+        this.camera.getComponentOfType(Camera).aspect = 0.3 / 0.5;
 
         // initialize player
         const playerNode = loader.loadNode('Player.007');
         const playerTransform = playerNode.getComponentOfType(Transform);
-        playerNode.addComponent(new Player(playerTransform, this.mainCamera, playerNode, this.canvas));
+        playerNode.addComponent(new Player(playerTransform, this.camera, playerNode, this.canvas));
         playerNode.isDynamic = true;
         playerNode.aabb = {
             min: [-0.2, -0.2, -0.2],
@@ -83,7 +89,6 @@ export class Game {
         };
         this.scene.addChild(playerNode);
 
-        
         this.scene.traverse(node => {
             const model = node.getComponentOfType(Model);
             if (!model) {
@@ -96,7 +101,7 @@ export class Game {
             console.log(node.name)
             console.log(node.getComponentOfType(Model).nodeIndex)
             console.log(node.getComponentOfType(Model).name)*/
-            // build trapList        
+            // build trapList
         });
 /*
         let l = this.scene.find(element => element.name.includes("Trap"));
@@ -105,11 +110,12 @@ export class Game {
         playerNode.isStatic = false;
         playerNode.isDynamic = true;
 
-        if (!this.scene || !this.mainCamera) {
+        if (!this.scene || !this.camera) {
             throw new Error('Scene or Camera not present in glTF');
         }
 
-        this.renderer = new UnlitRenderer(this.gl);
+        await this.init_sky();
+
         this.render();
 
         new ResizeSystem({ canvas: this.canvas, resize: this.resize.bind(this) }).start();
@@ -127,15 +133,18 @@ export class Game {
     }
 
     render() {
-        this.renderer.render(this.scene, this.mainCamera);
+        this.renderer.render(this.scene, this.camera, this.skybox);
     }
 
     resize({ displaySize: { width, height } }) {
-        this.mainCamera.getComponentOfType(Camera).aspect = width / height;
+        this.camera.getComponentOfType(Camera).aspect = width / height;
     }
 
     async initialize() {
-        document.querySelector('.main-menu').remove();
+        // document.querySelector('.main-menu').remove();
+        const mainMenu = document.querySelector('.main-menu');
+        const parent = mainMenu.parentNode;
+        parent.removeChild(mainMenu);
 
         await this.start();
 
@@ -150,5 +159,36 @@ export class Game {
             const boxes = model.primitives.map(primitive => calculateAxisAlignedBoundingBox(primitive.mesh));
             node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
         });
+    }
+
+    async init_sky() {
+        const [cubeMesh, modelMesh, baseImage, envmapImage] = await Promise.all([
+            new JSONLoader().loadMesh('../../../common/models/cube.json'),
+            new JSONLoader().loadMesh('../../../common/models/bunny.json'),
+            new ImageLoader().load('../../game/assets/images/grayscale.png'),
+            // new ImageLoader().load('../../game/assets/images/cambridge.webp'),
+            new ImageLoader().load('../../game/assets/images/sky.jpg'),
+        ]);
+
+        console.log(cubeMesh);
+        console.log(envmapImage);
+
+        this.skybox = new Node();
+        this.skybox.addComponent(new Model({
+            primitives: [
+                new Primitive({
+                    mesh: cubeMesh,
+                    material: new Material({
+                        baseTexture: new Texture({
+                            image: envmapImage,
+                            sampler: new Sampler({
+                                minFilter: 'linear',
+                                magFilter: 'linear',
+                            }),
+                        }),
+                    }),
+                }),
+            ],
+        }));
     }
 }
