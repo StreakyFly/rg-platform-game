@@ -8,7 +8,7 @@ import {
     Texture,
     Transform,
 } from '../../common/engine/core.js';
-
+import { pause } from '../../main.js';
 import { GLTFLoader } from '../../common/engine/loaders/GLTFLoader.js';
 import { UnlitRenderer } from '../../common/engine/renderers/UnlitRenderer.js';
 import { ResizeSystem } from '../../common/engine/systems/ResizeSystem.js';
@@ -58,7 +58,7 @@ export class Game {
         for (const trap of movingPlatforms){
             const movingTrapNode = this.scene.children[trap.mesh];
             const movingTrapTransform = movingTrapNode.getComponentOfType(Transform);
-            let movingTrapTranslation = [0.01, 0, 0];
+            let movingTrapTranslation = [0.002, 0, 0];
             const maxTranslationDistance = 1;
             movingTrapNode.addComponent(new Entity(movingTrapTransform, movingTrapTranslation, maxTranslationDistance));
         }   
@@ -117,6 +117,7 @@ export class Game {
     }
 
     update(time, dt) {
+        if (pause) return;
         this.scene.traverse(node => {
             for (const component of node.components) {
                 component.update?.(time, dt);
@@ -149,6 +150,5 @@ export class Game {
             const boxes = model.primitives.map(primitive => calculateAxisAlignedBoundingBox(primitive.mesh));
             node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
         });
-
     }
 }

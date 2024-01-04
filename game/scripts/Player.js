@@ -46,6 +46,12 @@ export class Player {
         this.spiderManJump = true;
 
         this.initHandlers();
+
+        // respawn stuff
+        this.checkpoints = [[0, 0, 0]];
+        this.currPointIndex = 0;
+        this.killY = [-5, -0.2];
+        this.currKillYIndex = 0;
     }
 
     changeTo2D(level) {
@@ -141,8 +147,8 @@ export class Player {
         if (!this.keys['KeyW'] &&
             !this.keys['KeyS'] &&
             !this.keys['KeyD'] &&
-            !this.keys['KeyA'])
-        {
+            !this.keys['KeyA'] &&
+            !this.keys['Space']) {
             const decay = Math.exp(dt * Math.log(1 - this.decay));
             vec3.scale(this.velocity, this.velocity, decay);
         }
@@ -170,6 +176,12 @@ export class Player {
             rotation = quat.create();
             quat.rotateX(rotation, rotation, this.pitch);
             this.playerCamera.getComponentOfType(Transform).rotation = rotation;
+        }
+
+        // respawn logic
+        // TODO -> after first death, it respawns and then it doesnt
+        if (this.playerTransform.translation[1] < this.killY[this.currKillYIndex]) {
+            this.playerTransform.translation = this.checkpoints[this.currPointIndex];
         }
 
         this.handleJump(dt);
@@ -240,7 +252,7 @@ export class Player {
         this.yaw -= dx * this.pointerSensitivity;
 
         const twopi = Math.PI * 2;
-        const verticalRotationView = Math.PI / 5;  // up down rotation limit
+        const verticalRotationView = Math.PI / 3;  // up down rotation limit
 
         this.pitch = Math.min(Math.max(this.pitch, -verticalRotationView), verticalRotationView);
         this.yaw = ((this.yaw % twopi) + twopi) % twopi;

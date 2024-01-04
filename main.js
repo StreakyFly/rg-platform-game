@@ -2,12 +2,22 @@ import { Game } from './game/scripts/Game.js';
 
 document.querySelector('.loader-container').remove();
 
+//canvas
+
 const bodyElement = document.body;
 // bodyElement.classList.add('main-menu');  // TODO why does this change the menu layout?? This should've already been loaded before
 
 window.startGame = startGame;
 window.openSettings = openSettings;
 window.openMap = openMap;
+
+export let pause = false;
+document.addEventListener("keydown", ({key}) => {
+    if (key === "p") {
+        pause = !pause;
+        console.log("pause")
+    }
+})
 
 function startGame() {
     showLoadingScreen();
