@@ -179,9 +179,9 @@ export class Player {
         }
 
         // respawn logic
+        // console.log('checkpoint:', this.checkPoints[this.currCheckPointIndex]);
         if (this.playerTransform.translation[1] < this.killY[this.currKillYIndex]) {
             const checkpoint = this.checkPoints[this.currCheckPointIndex]
-            // console.log(checkpoint);
             // this.playerTransform.translation = checkpoint;  // how does checkpoint magically get updated instead of player's translation??
             this.playerTransform.translation = [...checkpoint];
         }
