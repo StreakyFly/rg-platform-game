@@ -1,6 +1,6 @@
-import {quat, vec3} from '../../lib/gl-matrix-module.js';
-import {Transform} from '../../common/engine/core/Transform.js';
-import {Physics} from "./Physics.js";
+import { quat, vec3 } from '../../lib/gl-matrix-module.js';
+import { Transform } from '../../common/engine/core/Transform.js';
+import { Physics } from "./Physics.js";
 
 
 const cameraView = {
@@ -43,12 +43,13 @@ export class Player {
 
         this.physics = new Physics();
 
-        this.spiderManJump = true;
+        this.spiderManJump = false;
 
         this.initHandlers();
 
         // respawn stuff
-        this.checkPoints = [[0, 0, 0], [0, 0, 0]];
+        this.checkPoints = [[0, 0, 0], [0.06008519193606168, -0.07916116319015652, -14.55601523724378]];
+        this.checkPointsRotation = [[0, 0], [0, 0]]; // [pitch, yaw]
         this.currCheckPointIndex = 0;
         this.killY = [-5, -0.2];
         this.currKillYIndex = 0;
@@ -179,14 +180,34 @@ export class Player {
         }
 
         // respawn logic
-        // console.log('checkpoint:', this.checkPoints[this.currCheckPointIndex]);
         if (this.playerTransform.translation[1] < this.killY[this.currKillYIndex]) {
             const checkpoint = this.checkPoints[this.currCheckPointIndex]
-            // this.playerTransform.translation = checkpoint;  // how does checkpoint magically get updated instead of player's translation??
+            // position
             this.playerTransform.translation = [...checkpoint];
+
+            // rotation
+            this.pitch = this.checkPointsRotation[this.currCheckPointIndex][0];
+            this.yaw = this.checkPointsRotation[this.currCheckPointIndex][1];
         }
 
         this.handleJump(dt);
+
+        //check if player on checkpoint
+        if (this.currCheckPointIndex < this.checkPoints.length - 1 && this.currKillYIndex < this.killY.length - 1) {
+            this.checkForCheckpoints();
+        }
+
+    }
+
+    checkForCheckpoints() {
+        const LookForCheck = this.checkPoints[this.currCheckPointIndex + 1]
+        if (this.playerTransform.translation[0] > LookForCheck[0] - 1.0 && this.playerTransform.translation[0] < LookForCheck[0] + 1.0 &&
+            this.playerTransform.translation[1] > LookForCheck[1] - 1.0 && this.playerTransform.translation[1] < LookForCheck[1] + 1.0 &&
+            this.playerTransform.translation[2] > LookForCheck[2] - 1.0 && this.playerTransform.translation[2] < LookForCheck[2] + 1.0) {
+            this.currCheckPointIndex++;
+            this.currKillYIndex++;
+            console.log("ON CHECKPOINT")
+        }
     }
 
     handleJump(dt) {
