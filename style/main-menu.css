@@ -6,9 +6,12 @@ body, html {
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
+    background-attachment: fixed;
     height: 100%;
     width: 100%;
+    min-height: 100vh;
 }
+
 
 .main-menu {
     width: 400px;
