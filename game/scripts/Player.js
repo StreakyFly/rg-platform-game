@@ -1,7 +1,7 @@
 import { quat, vec3 } from '../../lib/gl-matrix-module.js';
 import { Transform } from '../../common/engine/core/Transform.js';
 import { Physics } from "./Physics.js";
-import { showBottomText } from "../../main.js";
+import {showBottomText, showTopText} from "../../main.js";
 import * as Color from './Color.js';
 
 const cameraView = {
@@ -194,6 +194,7 @@ export class Player {
     }
 
     respawn() {
+        showTopText("You died...", 'red', 'black', 2);
         const checkpoint = this.checkPoints[this.currCheckPointIndex]
         // position
         this.playerTransform.translation = [...checkpoint];
@@ -210,7 +211,7 @@ export class Player {
         {
             this.currCheckPointIndex++;
             this.currKillYIndex++;
-            showBottomText("Checkpoint reached!", 3);
+            showBottomText("Checkpoint reached!");
         }
     }
 
