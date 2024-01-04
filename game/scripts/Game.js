@@ -31,7 +31,8 @@ export class Game {
 
     async start() {
         const loader = new GLTFLoader();
-        await loader.load('../../game/assets/models/platform.gltf');
+        // await loader.load('../../game/assets/models/platform.gltf');
+        await loader.load('../../game/assets/models/level.gltf');
 
         this.scene = loader.loadScene(loader.defaultScene);
 
