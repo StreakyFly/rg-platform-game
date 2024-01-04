@@ -1,6 +1,6 @@
-import { quat, vec3 } from '../../lib/gl-matrix-module.js';
-import { Transform } from '../../common/engine/core/Transform.js';
-import { Physics } from "./Physics.js";
+import {quat, vec3} from '../../lib/gl-matrix-module.js';
+import {Transform} from '../../common/engine/core/Transform.js';
+import {Physics} from "./Physics.js";
 
 
 const cameraView = {
@@ -30,9 +30,9 @@ export class Player {
         this.acceleration = 1000;  // basically instant max speed
         this.maxSpeed = 2.5;
         this.decay = 1;  // 0.99 before // 1 = no decay
-        this.gravity = -9.81;
+        this.gravity = -9.81 * 1.1;
 
-        this.jumpVelocity = 2.5;  // 3.0 before
+        this.jumpVelocity = 3.0;
         this.doubleJumpVelocity = 3.5;  // 4.5 before
         this.velocityY = 0;
         this.maxVelocityY = 7;
@@ -48,8 +48,8 @@ export class Player {
         this.initHandlers();
 
         // respawn stuff
-        this.checkpoints = [[0, 0, 0]];
-        this.currPointIndex = 0;
+        this.checkPoints = [[0, 0, 0], [0, 0, 0]];
+        this.currCheckPointIndex = 0;
         this.killY = [-5, -0.2];
         this.currKillYIndex = 0;
     }
@@ -179,9 +179,11 @@ export class Player {
         }
 
         // respawn logic
-        // TODO -> after first death, it respawns and then it doesnt
         if (this.playerTransform.translation[1] < this.killY[this.currKillYIndex]) {
-            this.playerTransform.translation = this.checkpoints[this.currPointIndex];
+            const checkpoint = this.checkPoints[this.currCheckPointIndex]
+            // console.log(checkpoint);
+            // this.playerTransform.translation = checkpoint;  // how does checkpoint magically get updated instead of player's translation??
+            this.playerTransform.translation = [...checkpoint];
         }
 
         this.handleJump(dt);
