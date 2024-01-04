@@ -17,6 +17,7 @@ import { calculateAxisAlignedBoundingBox, mergeAxisAlignedBoundingBoxes } from "
 
 import { Physics } from './Physics.js';
 import { Player } from "./Player.js";
+import { Entity } from "./entities/Entity.js";
 
 
 export class Game {
@@ -36,6 +37,32 @@ export class Game {
 
         this.scene = loader.loadScene(loader.defaultScene);
 
+        const traps = loader.gltf.nodes.filter(element => element.name.includes("Trap"));
+        for (const trap of traps){
+            this.scene.children[trap.mesh].isTrap = true;
+        }
+
+
+        // testing
+        const movingTraps = loader.gltf.nodes.filter(element => element.name.includes("Moving"));
+        for (const trap of movingTraps){
+            const movingTrapNode = this.scene.children[trap.mesh];
+            const movingTrapTransform = movingTrapNode.getComponentOfType(Transform);
+            let movingTrapTranslation = [0, 0.005, 0];
+            const maxTranslationDistance = 1;
+            movingTrapNode.addComponent(new Entity(movingTrapTransform, movingTrapTranslation, maxTranslationDistance));
+        }
+
+        // testing
+        const movingPlatforms = loader.gltf.nodes.filter(element => element.name.includes("MovablePlatform"));
+        for (const trap of movingPlatforms){
+            const movingTrapNode = this.scene.children[trap.mesh];
+            const movingTrapTransform = movingTrapNode.getComponentOfType(Transform);
+            let movingTrapTranslation = [0.01, 0, 0];
+            const maxTranslationDistance = 1;
+            movingTrapNode.addComponent(new Entity(movingTrapTransform, movingTrapTranslation, maxTranslationDistance));
+        }   
+
         // initialize camera
         this.mainCamera = loader.loadNode('Camera');
         // mainCamera.addComponent(new Transform({
@@ -45,10 +72,8 @@ export class Game {
         this.mainCamera.getComponentOfType(Camera).near = 0.1;
         this.mainCamera.getComponentOfType(Camera).aspect = 0.3 / 0.5;
 
-
         // initialize player
         const playerNode = loader.loadNode('Player.007');
-
         const playerTransform = playerNode.getComponentOfType(Transform);
         playerNode.addComponent(new Player(playerTransform, this.mainCamera, playerNode, this.canvas));
         playerNode.isDynamic = true;
@@ -58,11 +83,25 @@ export class Game {
         };
         this.scene.addChild(playerNode);
 
+        
         this.scene.traverse(node => {
-            if (node.getComponentOfType(Model) !== undefined) {
-                node.isStatic = true;
+            const model = node.getComponentOfType(Model);
+            if (!model) {
+                return;
             }
+
+            node.isStatic = true;
+            /*
+            console.log(node.nodeIndex)
+            console.log(node.name)
+            console.log(node.getComponentOfType(Model).nodeIndex)
+            console.log(node.getComponentOfType(Model).name)*/
+            // build trapList        
         });
+/*
+        let l = this.scene.find(element => element.name.includes("Trap"));
+        l.find(element => element.name === nameOrIndex);
+        console.log(l)*/
         playerNode.isStatic = false;
         playerNode.isDynamic = true;
 

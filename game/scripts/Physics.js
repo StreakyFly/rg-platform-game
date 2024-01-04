@@ -1,7 +1,6 @@
 import { vec3, mat4 } from '../../lib/gl-matrix-module.js';
 import { getGlobalModelMatrix } from '../../common/engine/core/SceneUtils.js';
-import { Transform } from '../../common/engine/core.js';
-
+import { Transform, Model } from '../../common/engine/core.js';
 
 export class Physics {
 
@@ -66,6 +65,13 @@ export class Physics {
         // Check if there is collision.
         const isColliding = this.aabbIntersection(aBox, bBox);
         if (!isColliding) {
+            return;
+        }
+
+        // check if it's a trap
+        if(b.isTrap){
+            // respawn player
+            console.log("Respawn player");
             return;
         }
 
