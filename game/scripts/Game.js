@@ -170,9 +170,6 @@ export class Game {
             new ImageLoader().load('../../game/assets/images/sky.jpg'),
         ]);
 
-        console.log(cubeMesh);
-        console.log(envmapImage);
-
         this.skybox = new Node();
         this.skybox.addComponent(new Model({
             primitives: [

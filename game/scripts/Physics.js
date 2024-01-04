@@ -68,13 +68,6 @@ export class Physics {
             return;
         }
 
-        // check if it's a trap
-        if(b.isTrap){
-            // respawn player
-            console.log("Respawn player");
-            return;
-        }
-
         // Move node A minimally to avoid collision.
         const diffa = vec3.sub(vec3.create(), bBox.max, aBox.min);
         const diffb = vec3.sub(vec3.create(), aBox.max, bBox.min);

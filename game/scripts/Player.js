@@ -1,7 +1,8 @@
 import { quat, vec3 } from '../../lib/gl-matrix-module.js';
 import { Transform } from '../../common/engine/core/Transform.js';
 import { Physics } from "./Physics.js";
-import { showTopText } from "../../main.js";
+import { showBottomText } from "../../main.js";
+import * as Color from './Color.js';
 
 const cameraView = {
     "3D": "3d",
@@ -48,7 +49,7 @@ export class Player {
         this.initHandlers();
 
         // respawn stuff
-        this.checkPoints = [[0, 0, 0], [0.06008519193606168, -0.07916116319015652, -14.55601523724378]];
+        this.checkPoints = [[0, 0, 0], [0.00227, -0.07916, -14.48493]];
         this.checkPointsRotation = [[0, 0], [0, 0]]; // [pitch, yaw]
         this.currCheckPointIndex = 0;
         this.killY = [-5, -0.2];
@@ -96,13 +97,13 @@ export class Player {
     }
 
     update(t, dt) {
-        // Calculate forward and right vectors.
+        // calculate forward and right vectors.
         const cos = Math.cos(this.yaw);
         const sin = Math.sin(this.yaw);
         const forward = [-sin, 0, -cos];
         const right = [cos, 0, -sin];
 
-        // Map user input to the acceleration vector.
+        // map user input to the acceleration vector.
         const acc = vec3.create();
         if (this.keys['KeyW'] || this.keys['KeyUp']) {
             if (this.view === cameraView['3D']) vec3.add(acc, acc, forward);
@@ -141,10 +142,10 @@ export class Player {
             return;
         }
 
-        // Update velocity based on acceleration.
+        // update velocity based on acceleration.
         vec3.scaleAndAdd(this.velocity, this.velocity, acc, dt * this.acceleration);
 
-        // If there is no user input, apply decay.
+        // if there is no user input, apply decay.
         if (!this.keys['KeyW'] &&
             !this.keys['KeyS'] &&
             !this.keys['KeyD'] &&
@@ -154,7 +155,7 @@ export class Player {
             vec3.scale(this.velocity, this.velocity, decay);
         }
 
-        // Limit speed to prevent accelerating to infinity and beyond.
+        // limit speed to prevent accelerating to infinity and beyond.
         const speed = vec3.length(this.velocity);
         if (speed > this.maxSpeed) {
             vec3.scale(this.velocity, this.velocity, this.maxSpeed / speed);
@@ -165,10 +166,10 @@ export class Player {
             this.velocityY = -this.maxVelocityY;
         }
 
-        // Update translation based on velocity and jump logic.
+        // update translation based on velocity and jump logic.
         vec3.scaleAndAdd(this.playerTransform.translation, this.playerTransform.translation, this.velocity, dt);
 
-        // Update rotation based on the Euler angles.
+        // update rotation based on the Euler angles.
         let rotation = quat.create();
         quat.rotateY(rotation, rotation, this.yaw);
         this.playerTransform.rotation = rotation;
@@ -179,34 +180,37 @@ export class Player {
             this.playerCamera.getComponentOfType(Transform).rotation = rotation;
         }
 
-        // respawn logic
         if (this.playerTransform.translation[1] < this.killY[this.currKillYIndex]) {
-            const checkpoint = this.checkPoints[this.currCheckPointIndex]
-            // position
-            this.playerTransform.translation = [...checkpoint];
-
-            // rotation
-            this.pitch = this.checkPointsRotation[this.currCheckPointIndex][0];
-            this.yaw = this.checkPointsRotation[this.currCheckPointIndex][1];
+            this.respawn();
         }
 
         this.handleJump(dt);
 
-        //check if player on checkpoint
+        // check if player on checkpoint
         if (this.currCheckPointIndex < this.checkPoints.length - 1 && this.currKillYIndex < this.killY.length - 1) {
             this.checkForCheckpoints();
         }
 
     }
 
+    respawn() {
+        const checkpoint = this.checkPoints[this.currCheckPointIndex]
+        // position
+        this.playerTransform.translation = [...checkpoint];
+        // rotation
+        this.pitch = this.checkPointsRotation[this.currCheckPointIndex][0];
+        this.yaw = this.checkPointsRotation[this.currCheckPointIndex][1];
+    }
+
     checkForCheckpoints() {
-        const LookForCheck = this.checkPoints[this.currCheckPointIndex + 1]
-        if (this.playerTransform.translation[0] > LookForCheck[0] - 1.0 && this.playerTransform.translation[0] < LookForCheck[0] + 1.0 &&
-            this.playerTransform.translation[1] > LookForCheck[1] - 1.0 && this.playerTransform.translation[1] < LookForCheck[1] + 1.0 &&
-            this.playerTransform.translation[2] > LookForCheck[2] - 1.0 && this.playerTransform.translation[2] < LookForCheck[2] + 1.0) {
+        const nextCheckPoint = this.checkPoints[this.currCheckPointIndex + 1]
+        if (this.playerTransform.translation[0] > nextCheckPoint[0] - 1.0 && this.playerTransform.translation[0] < nextCheckPoint[0] + 1.0 &&
+            this.playerTransform.translation[1] > nextCheckPoint[1] - 1.0 && this.playerTransform.translation[1] < nextCheckPoint[1] + 1.0 &&
+            this.playerTransform.translation[2] > nextCheckPoint[2] - 1.0 && this.playerTransform.translation[2] < nextCheckPoint[2] + 1.0)
+        {
             this.currCheckPointIndex++;
             this.currKillYIndex++;
-            showTopText("Checkpoint reached!", 3);
+            showBottomText("Checkpoint reached!", 3);
         }
     }
 
@@ -239,15 +243,18 @@ export class Player {
     }
 
     isOnObject() {
-        if (this.velocityY > 0) {
-            return false;
-        }
-
         const player = this.node;
         for (const object of this.node.parent.children) {
             if (object.aabb === undefined || object === this.node) continue;
 
             if (this.checkCollision(player, object)) {
+                if (object.isTrap){
+                    this.respawn();
+                    return true;
+                }
+                if (this.velocityY > 0) {
+                    return false;
+                }
                 const distanceBetweenPlayersBottomAndObjectsTop = this.physics.getTransformedAABB(object).max[1] - this.playerTransform.translation[1];
                 if (this.spiderManJump || Math.abs(distanceBetweenPlayersBottomAndObjectsTop) < 0.01) {  // Math.abs not necessary afaik (wasn't tested without though)
                     return true;
@@ -258,11 +265,11 @@ export class Player {
     }
 
     checkCollision(a, b) {
-        // Get global space AABBs.
+        // get global space AABBs.
         const aBox = this.physics.getTransformedAABB(a);
         const bBox = this.physics.getTransformedAABB(b);
 
-        // Check if there is collision.
+        // check if there is collision.
         return this.physics.aabbIntersection(aBox, bBox);
     }
 
@@ -290,6 +297,8 @@ export class Player {
         if (e.code === 'Space') {
             this.attemptJump = false;
             this.attemptDoubleJump = false;
+        } else if (e.code === 'KeyL') {  // TODO for testing only
+            console.log("Current player location:", this.playerTransform.translation)
         }
     }
 }
