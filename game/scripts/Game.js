@@ -75,7 +75,7 @@ export class Game {
         // }));
 
         this.camera.getComponentOfType(Camera).fovy = 1;
-        this.camera.getComponentOfType(Camera).near = 0.1;
+        this.camera.getComponentOfType(Camera).near = 0.01;
         this.camera.getComponentOfType(Camera).aspect = 0.3 / 0.5;
 
         // initialize player

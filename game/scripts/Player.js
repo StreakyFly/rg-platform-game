@@ -32,8 +32,8 @@ export class Player {
         this.decay = 1;  // 0.99 before // 1 = no decay
         this.gravity = -9.81;
 
-        this.jumpVelocity = 3;
-        this.doubleJumpVelocity = 4.5;
+        this.jumpVelocity = 2.5;  // 3.0 before
+        this.doubleJumpVelocity = 3.5;  // 4.5 before
         this.velocityY = 0;
         this.maxVelocityY = 7;
         this.attemptJump = false;
