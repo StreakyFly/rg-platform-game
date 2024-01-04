@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,10 +9,11 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caudex&display=swap">
   <link href='https://fonts.googleapis.com/css?family=MedievalSharp' rel='stylesheet'>
   <link rel="stylesheet" href="style/game.css">
-  <link rel="stylesheet" href="style/main-menu.css">
+  <link rel="stylesheet" href="style/menu.css">
   <script src="lib/gl-matrix-min.js"></script>
   <script type="module" src="main.js"></script>
 </head>
+
 <body>
   <div id="mainMenu" class="main-menu">
     <img id="gameName" src="game/assets/images/gameName.png" alt="FortScape">
@@ -20,10 +22,25 @@
     <button onclick="openMap()">Map</button>
     <button onclick="openSettings()">Settings</button>
   </div>
+  <div id="pauseMenu" style="display:none;">
+    <h1>Game Paused</h1>
+    <button onclick="pauseToggle()">Continue</button>
+    <button onclick="location.reload()" id="mainMenuB">Main Menu</button>
+  </div>
+  <div id="loadingScreen" style="display:none;">
+    <div id="loadingContent">
+      <div id="loadingBar"></div>
+      <p id="loadingText">Loading... 0%</p>
+    </div>
+  </div>
+  <div id="topText">
+    <p>Your Text Here</p>
+  </div>
   <div class="fullscreen no-touch">
     <canvas class="pixelated"></canvas>
   </div>
   <div class="fullscreen overlay loader-container">
   </div>
 </body>
+
 </html>

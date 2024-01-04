@@ -1,7 +1,7 @@
 import { quat, vec3 } from '../../lib/gl-matrix-module.js';
 import { Transform } from '../../common/engine/core/Transform.js';
 import { Physics } from "./Physics.js";
-
+import { showTopText } from "../../main.js";
 
 const cameraView = {
     "3D": "3d",
@@ -206,7 +206,7 @@ export class Player {
             this.playerTransform.translation[2] > LookForCheck[2] - 1.0 && this.playerTransform.translation[2] < LookForCheck[2] + 1.0) {
             this.currCheckPointIndex++;
             this.currKillYIndex++;
-            console.log("ON CHECKPOINT")
+            showTopText("Checkpoint reached!", 3);
         }
     }
 
