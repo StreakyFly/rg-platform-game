@@ -56,6 +56,7 @@ function startGame() {
             setTimeout(() => {
                 updateLoadingScreen(80);
             }, 1000);
+            bodyElement.classList.add('shown');
             console.log("Game initialized!");
             updateLoadingScreen(100);
             setTimeout(() => {

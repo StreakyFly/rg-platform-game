@@ -21,13 +21,17 @@
     top: 80%;
     left: 50%;
     transform: translateX(-50%);
-    width: 500px;
+    width: 1px;
     text-align: center;
     padding: 10px;
     opacity: 0;
     z-index: 2000;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
     transition: opacity 0.5s ease-in-out;
+}
+
+.shown #bottomText {
+    width: 500px;
 }
 
 #bottomText p {
