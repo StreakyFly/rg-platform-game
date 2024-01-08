@@ -9,7 +9,7 @@ import { shaders } from './shaders.js';
 const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl2');
 
-// Compile the shadersOLD and create the program.
+// Compile the shaders and create the program.
 const programs = WebGL.buildPrograms(gl, shaders);
 
 const settings = {
