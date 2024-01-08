@@ -11,31 +11,25 @@ import {
 
 import { pause } from '../../main.js';
 
-import { JSONLoader } from "../../common/engine/loaders/JSONLoader.js";
-import { ImageLoader } from "../../common/engine/loaders/ImageLoader.js";
+import { JSONLoader } from '../../common/engine/loaders/JSONLoader.js';
+import { ImageLoader } from '../../common/engine/loaders/ImageLoader.js';
 import { GLTFLoader } from '../../common/engine/loaders/GLTFLoader.js';
 import { ResizeSystem } from '../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../common/engine/systems/UpdateSystem.js';
-import { calculateAxisAlignedBoundingBox, mergeAxisAlignedBoundingBoxes } from "../../common/engine/core/MeshUtils.js";
+import { calculateAxisAlignedBoundingBox, mergeAxisAlignedBoundingBoxes } from '../../common/engine/core/MeshUtils.js';
 
-import { Renderer } from "./Renderer.js";
+import { Renderer } from './Renderer.js';
 
 import { Physics } from './Physics.js';
 
-// import { Player } from "./DEBUG_Player.js";
-import { Player } from "./Player.js";
+// import { Player } from './DEBUG_Player.js';
+import { Player } from './Player.js';
 
-import { Entity } from "./entities/Entity.js";
-import { Light } from "./Light.js";
+import { Entity } from './entities/Entity.js';
+import { Light } from './Light.js';
 
-class RespawnPoint {
-    constructor(checkPointTransform, yaw, pitch) {
-        this.translation = checkPointTransform.translation;
-        this.rotation = checkPointTransform.rotation;
-        this.yaw = yaw;
-        this.pitch = pitch;
-    }
-}
+import { RespawnPoint } from './RespawnPoint.js';
+
 
 export class Game {
     constructor() {
@@ -47,125 +41,24 @@ export class Game {
         this.physics = null;
         this.skybox = null;
         this.lights = [];
+        this.checkPointMap = new Map();
+        this.OnRespawnMovingObjectNodes = [];
+        this.player = null;
     }
 
     async start() {
         const loader = new GLTFLoader();
-        // await loader.load('../../game/assets/models/platform.gltf');
         await loader.load('../../game/assets/models/level.gltf');
 
         this.scene = loader.loadScene(loader.defaultScene);
 
-        let checkPointMap = new Map();
-        let OnRespawnMovingObjectNodes = [];
-        // assign gameObject roles
-        for (let i = 0; i < loader.gltf.nodes.length; i++) {
-            const blendObject = loader.gltf.nodes[i];
-            const blendObjectNode = this.scene.children[i]
-
-            // assign checkPoints
-            if (blendObject.name.includes("CheckPoint")) {
-                const valueArray = blendObject.name.split("_");
-                blendObjectNode.checkPointIndex = parseInt(valueArray[0].split("")[valueArray[0].length - 1]);
-                /*
-                const yaw = valueArray[1].split("")[valueArray[1].length - 1] * Math.PI;
-                const pitch = valueArray[2].split("")[valueArray[2].length - 1] * Math.PI;*/
-                const yaw = Math.PI;
-                const pitch = 0;
-
-                checkPointMap.set(blendObjectNode.checkPointIndex, new RespawnPoint(blendObject, yaw, pitch))
-            }
-
-            // assign  traps
-            if (blendObject.name.includes("Trap")) blendObjectNode.isTrap = true;
-
-            // assign moving objects
-            if (blendObject.name.includes("Moving")) {
-                let maxTranslationDistance = 1;
-                let movingObjectTranslation = [0, 0, 0];
-                let moveBothDirections = !blendObject.name.includes("OneDir");
-                let movingSinceCheckPoint = 0;
-
-                if (blendObject.name.includes("UP")) {
-                    movingObjectTranslation = [0, 0.005, 0];
-                }
-                else if (blendObject.name.includes("DOWN")) {
-                    movingObjectTranslation = [0, -0.005, 0];
-                }
-                else if (blendObject.name.includes("LEFT")) {
-                    movingObjectTranslation = [-0.002, 0, 0];
-                }
-                else if (blendObject.name.includes("RIGHT")) {
-                    movingObjectTranslation = [0.002, 0, 0];
-                }
-                else if (blendObject.name.includes("FORWARD")) {
-                    movingObjectTranslation = [0, 0, 0.002];
-                }
-                else if (blendObject.name.includes("BACKWARDS")) {
-                    movingObjectTranslation = [0, 0, -0.002];
-                }
-                else if (blendObject.name.includes("CHASETRAP")) {
-                    maxTranslationDistance = 20.63;
-                    movingObjectTranslation = [0, 0, -0.008];
-                }
-
-                if (blendObject.name.includes("MovingOnSpawn")) {
-                    movingSinceCheckPoint = parseInt(blendObject.name.split("MovingOnSpawn")[1].split("")[0]);
-                    OnRespawnMovingObjectNodes.push(blendObjectNode);
-                }
-
-                if (blendObject.name.includes("Platform")) blendObjectNode.isEntityPlatform = true;
-
-                blendObjectNode.addComponent(new Entity(blendObjectNode.getComponentOfType(Transform), movingObjectTranslation, maxTranslationDistance, moveBothDirections, movingSinceCheckPoint));
-            }
-        }
-
-        // initialize camera
-        this.camera = loader.loadNode('Camera');
-        // this.camera.addComponent(new Transform({
-        //     translation: [0, 1, 0],
-        // }));
-
-        this.camera.getComponentOfType(Camera).fovy = 1;
-        this.camera.getComponentOfType(Camera).near = 0.01;
-        this.camera.getComponentOfType(Camera).aspect = 0.6;  // 0.3 / 0.5;
-
-        // initialize player
-        const playerNode = loader.loadNode('Player');
-        const playerTransform = playerNode.getComponentOfType(Transform);
-        playerNode.addComponent(new Player(playerTransform, this.camera, playerNode, OnRespawnMovingObjectNodes, this.canvas));
-        playerNode.isDynamic = true;
-        playerNode.aabb = {
-            min: [-0.2, -0.2, -0.2],
-            max: [0.2, 0.2, 0.2],
-        };
-
-        for (let i = 0; i < checkPointMap.size; i++) {
-            playerNode.getComponentOfType(Player).checkPoints[i] = checkPointMap.get(i);
-        }
-
-        this.scene.addChild(playerNode);
-
-
-        // Player test light
-        const light = new Node();
-        light.addComponent(new Transform({
-            // translation: [0, 2, -5],
-            translation: [0, 1, 0],
-        }));
-        const newLight = new Light({
-            color: [255, 189, 89],
-            intensity: 3,
-            attenuation: [0.001, 0, 0.3]
-        });
-
-        light.addComponent(newLight);
-        // this.scene.addChild(light);
-        playerNode.addChild(light);
-        this.lights.push(light);
+        this.assignObjects(loader);
+        this.initCamera(loader);
+        this.initPlayer(loader);
+        this.initPlayerLight();
+        await this.initSky();
 
         this.createLights(15);
-        console.log(this.lights);
 
         const white = new ImageData(new Uint8ClampedArray([255, 255, 255, 255]), 1, 1);
         const texture = new Texture({
@@ -175,7 +68,6 @@ export class Game {
                 magFilter: 'nearest',
             }),
         });
-
 
         this.scene.traverse(node => {
             const model = node.getComponentOfType(Model);
@@ -189,14 +81,12 @@ export class Game {
             model.primitives[0].material.roughnessTexture = texture  // TODO set this in Blender instead!
         });
 
-        playerNode.isStatic = false;
-        playerNode.isDynamic = true;
+        this.player.isStatic = false;
+        this.player.isDynamic = true;
 
         if (!this.scene || !this.camera) {
             throw new Error('Scene or Camera not present in glTF');
         }
-
-        await this.init_sky();
 
         this.render();
 
@@ -236,6 +126,120 @@ export class Game {
         }
     }
 
+    initPlayerLight() {
+        // test light for the Player
+        const light = new Node();
+        light.addComponent(new Transform({
+            // translation: [0, 2, -5],
+            translation: [0, 1, 0],
+        }));
+        light.addComponent(new Light({
+            color: [255, 189, 89],
+            intensity: 3,
+            attenuation: [0.001, 0, 0.3]
+        }));
+        // this.scene.addChild(light);
+        this.player.addChild(light);
+        this.lights.push(light);
+    }
+
+    initCamera(loader) {
+        this.camera = loader.loadNode('Camera');
+        // this.camera.addComponent(new Transform({
+        //     translation: [0, 1, 0],
+        // }));
+
+        this.camera.getComponentOfType(Camera).fovy = 1;
+        this.camera.getComponentOfType(Camera).near = 0.01;
+        this.camera.getComponentOfType(Camera).aspect = 0.6;  // 0.3 / 0.5;
+    }
+
+    initPlayer(loader) {
+        this.player = loader.loadNode('Player');
+        const playerTransform = this.player.getComponentOfType(Transform);
+        this.player.addComponent(new Player(playerTransform, this.camera, this.player, this.OnRespawnMovingObjectNodes, this.canvas));
+        this.player.isDynamic = true;
+        this.player.aabb = {
+            min: [-0.2, -0.2, -0.2],
+            max: [0.2, 0.2, 0.2],
+        };
+
+        for (let i = 0; i < this.checkPointMap.size; i++) {
+            this.player.getComponentOfType(Player).checkPoints[i] = this.checkPointMap.get(i);
+        }
+
+        this.scene.addChild(this.player);
+    }
+
+    assignObjects(loader) {
+        // assign gameObject roles
+        for (let i = 0; i < loader.gltf.nodes.length; i++) {
+            const blendObject = loader.gltf.nodes[i];
+            const blendObjectNode = this.scene.children[i]
+
+            // assign checkPoints
+            if (blendObject.name.includes("CheckPoint")) {
+                const valueArray = blendObject.name.split("_");
+                blendObjectNode.checkPointIndex = parseInt(valueArray[0].split("")[valueArray[0].length - 1]);
+                /*
+                const yaw = valueArray[1].split("")[valueArray[1].length - 1] * Math.PI;
+                const pitch = valueArray[2].split("")[valueArray[2].length - 1] * Math.PI;*/
+                const yaw = Math.PI;
+                const pitch = 0;
+
+                this.checkPointMap.set(blendObjectNode.checkPointIndex, new RespawnPoint(blendObject, yaw, pitch))
+            }
+
+            // assign  traps
+            if (blendObject.name.includes("Trap")) {
+                blendObjectNode.isTrap = true;
+            }
+
+            // assign moving objects
+            if (blendObject.name.includes("Moving")) {
+                let maxTranslationDistance = 1;
+                let movingObjectTranslation = [0, 0, 0];
+                let moveBothDirections = !blendObject.name.includes("OneDir");
+                let movingSinceCheckPoint = 0;
+
+                if (blendObject.name.includes("UP")) {
+                    movingObjectTranslation = [0, 0.005, 0];
+                }
+                else if (blendObject.name.includes("DOWN")) {
+                    movingObjectTranslation = [0, -0.005, 0];
+                }
+                else if (blendObject.name.includes("LEFT")) {
+                    movingObjectTranslation = [-0.002, 0, 0];
+                }
+                else if (blendObject.name.includes("RIGHT")) {
+                    movingObjectTranslation = [0.002, 0, 0];
+                }
+                else if (blendObject.name.includes("FORWARD")) {
+                    movingObjectTranslation = [0, 0, 0.002];
+                }
+                else if (blendObject.name.includes("BACKWARDS")) {
+                    movingObjectTranslation = [0, 0, -0.002];
+                }
+                else if (blendObject.name.includes("CHASETRAP")) {
+                    maxTranslationDistance = 20.63;
+                    movingObjectTranslation = [0, 0, -0.008];
+                }
+
+                if (blendObject.name.includes("MovingOnSpawn")) {
+                    movingSinceCheckPoint = parseInt(blendObject.name.split("MovingOnSpawn")[1].split("")[0]);
+                    this.OnRespawnMovingObjectNodes.push(blendObjectNode);
+                }
+
+                // assign platforms
+                if (blendObject.name.includes("Platform")) {
+                    blendObjectNode.isEntityPlatform = true;
+                }
+
+                blendObjectNode.addComponent(new Entity(
+                    blendObjectNode.getComponentOfType(Transform), movingObjectTranslation, maxTranslationDistance, moveBothDirections, movingSinceCheckPoint));
+            }
+        }
+    }
 
     update(time, dt) {
         if (pause) return;
@@ -276,12 +280,11 @@ export class Game {
         });
     }
 
-    async init_sky() {
+    async initSky() {
         const [cubeMesh, modelMesh, baseImage, envmapImage] = await Promise.all([
             new JSONLoader().loadMesh('../../../common/models/cube.json'),
             new JSONLoader().loadMesh('../../../common/models/bunny.json'),
             new ImageLoader().load('../../game/assets/images/grayscale.png'),
-            // new ImageLoader().load('../../game/assets/images/cambridge.webp'),
             new ImageLoader().load('../../game/assets/images/sky.png'),
         ]);
 

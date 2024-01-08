@@ -1,12 +1,12 @@
 import { vec3 } from '../../../lib/gl-matrix-module.js';
-export class Entity {        
+export class Entity {
     constructor(transform, translation, maxDistance, moveBothDirections, movingSinceCheckPoint) {
         this.transform = transform;
         this.startPos = this.transform.translation.slice();
         this.translation = translation;
         this.moveBothDirections = moveBothDirections;
         this.movingSinceCheckPoint = movingSinceCheckPoint;
-        this.movingEnabled = movingSinceCheckPoint == 0;
+        this.movingEnabled = movingSinceCheckPoint === 0;
         this.minX = this.startPos[0] - maxDistance;
         this.maxX = this.startPos[0] + maxDistance;
         this.minY = this.startPos[1] - maxDistance;
@@ -43,7 +43,7 @@ export class Entity {
 
     updateTranslation(axisIndex) {
         if (this.moveBothDirections) {
-            this.translation[axisIndex] = -this.translation[axisIndex]; 
+            this.translation[axisIndex] = -this.translation[axisIndex];
             return;
         }
         //this.resetPos();

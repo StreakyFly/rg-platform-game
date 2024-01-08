@@ -235,7 +235,7 @@ export class Player {
         }
 
         // change view
-        if (this.currCheckPointIndex == 4) {
+        if (this.currCheckPointIndex === 4) {
             this.changeTo2D();
         }
         else {
@@ -266,7 +266,6 @@ export class Player {
             else if (this.attemptJump && !this.isJumping) {
                 this.isJumping = true;
                 this.velocityY = this.jumpVelocity;
-
             }
         }  // else if not onObject, then apply gravity/change Y according to gravity
         else {
@@ -287,10 +286,9 @@ export class Player {
             if (object.aabb === undefined || object === this.node) continue;
 
             if (this.checkCollision(player, object)) {
-
                 this.checkForNewCheckpoint(object);
 
-                if (object.isTrap){
+                if (object.isTrap) {
                     this.respawn();
                     return true;
                 }
@@ -341,7 +339,7 @@ export class Player {
         if (e.code === 'Space') {
             this.attemptJump = false;
             this.attemptDoubleJump = false;
-        } else if (e.code === 'KeyL') {  // TODO for testing only
+        } else if (e.code === 'KeyL') {
             console.log("Current player location:", this.playerTransform.translation)
         }
     }
