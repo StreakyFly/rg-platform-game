@@ -2,7 +2,7 @@ import { quat, vec3 } from '../../lib/gl-matrix-module.js';
 import { Transform } from '../../common/engine/core/Transform.js';
 import { Physics } from "./Physics.js";
 import {showBottomText, showTopText} from "../../main.js";
-import * as Color from './Color.js';
+import { Entity } from './entities/Entity.js';
 
 const cameraView = {
     "3D": "3d",
@@ -10,18 +10,20 @@ const cameraView = {
 };
 
 export class Player {
-    constructor(playerTransform, playerCamera, node, domElement, {
+    constructor(playerTransform, playerCamera, node, OnRespawnMovingObjects, domElement, {
         pointerSensitivity = 0.002,
     } = {}) {
         this.playerTransform = playerTransform;
         this.playerCamera = playerCamera;
         this.node = node;
         this.node.addChild(this.playerCamera);
+        this.OnRespawnMovingObjects = OnRespawnMovingObjects;
         this.domElement = domElement;
 
         this.pointerSensitivity = pointerSensitivity;
 
         this.view = cameraView['3D'];
+        this.downSideView = false;
 
         this.keys = {};
 
@@ -44,19 +46,19 @@ export class Player {
 
         this.physics = new Physics();
 
-        this.spiderManJump = true;
+        this.spiderManJump = false;
 
         this.initHandlers();
 
-        // respawn stuff
-        this.checkPoints = [[0, 0, 0], [0.00227, -0.07916, -14.48493]];
-        this.checkPointsRotation = [[0, 0], [0, 0]]; // [pitch, yaw]
+        this.checkPoints = [];
+
         this.currCheckPointIndex = 0;
-        this.killY = [-5, -0.2];
+        this.killYMin = -5;
+        this.killYMax = 21;
         this.currKillYIndex = 0;
     }
 
-    changeTo2D(level) {
+    changeTo2D() {
         // TODO -> find level values to adjust player start position to apply rotation(rotation/check points);
         //this.playerTransform.translation = [0, 0, 0];
         this.yaw = 0;
@@ -67,7 +69,31 @@ export class Player {
         this.playerCamera.getComponentOfType(Transform).rotation = rotation;
     }
 
-    changeTo3D(level) {
+    changeToDownside3D() {
+        // problem z jumpi in levo desno
+        this.downSideView = true;
+
+        this.gravity = 9.81 * 1.1;
+
+        this.yaw = 0;
+        this.view = cameraView['3D'];
+        this.playerTransform.rotation = [0, 0, 1, 0];
+        this.playerTransform.translation[1] = -0.1015;
+
+        this.yaw = 0;
+        this.view = cameraView['2D'];
+        this.playerCamera.getComponentOfType(Transform).translation[0] = 5;
+        const rotation = quat.create();
+        quat.rotateY(rotation, rotation, Math.PI / 2);
+        this.playerCamera.getComponentOfType(Transform).rotation = rotation;
+
+
+        //const rotation = quat.create();
+        //quat.rotateX(rotation, rotation, Math.PI);
+        //this.playerCamera.getComponentOfType(Transform).rotation = rotation;
+    }
+
+    changeTo3D() {
         // TODO -> find level values to adjust player start position to apply rotation(rotation/check points);
         // this.playerTransform.translation = [0, 0, 0];
         this.view = cameraView['3D']
@@ -142,6 +168,11 @@ export class Player {
             return;
         }
 
+        if (this.keys['KeyG']) {
+            this.changeToDownside3D();
+            return;
+        }
+
         // update velocity based on acceleration.
         vec3.scaleAndAdd(this.velocity, this.velocity, acc, dt * this.acceleration);
 
@@ -171,8 +202,10 @@ export class Player {
 
         // update rotation based on the Euler angles.
         let rotation = quat.create();
-        quat.rotateY(rotation, rotation, this.yaw);
-        this.playerTransform.rotation = rotation;
+        if (!this.downSideView) {
+            quat.rotateY(rotation, rotation, this.yaw);
+            this.playerTransform.rotation = rotation;
+        }
 
         if (this.view !== cameraView['2D']) {
             rotation = quat.create();
@@ -180,37 +213,42 @@ export class Player {
             this.playerCamera.getComponentOfType(Transform).rotation = rotation;
         }
 
-        if (this.playerTransform.translation[1] < this.killY[this.currKillYIndex]) {
+        if (this.playerTransform.translation[1] < this.killYMin || this.playerTransform.translation[1] > this.killYMax) {
             this.respawn();
         }
 
         this.handleJump(dt);
-
-        // check if player on checkpoint
-        if (this.currCheckPointIndex < this.checkPoints.length - 1 && this.currKillYIndex < this.killY.length - 1) {
-            this.checkForCheckpoints();
-        }
-
     }
 
     respawn() {
-        showTopText("You died...", 'red', 'black', 2);
+        showTopText("You died...", 'red', 'black', 1);
         const checkpoint = this.checkPoints[this.currCheckPointIndex]
-        // position
-        this.playerTransform.translation = [...checkpoint];
-        // rotation
-        this.pitch = this.checkPointsRotation[this.currCheckPointIndex][0];
-        this.yaw = this.checkPointsRotation[this.currCheckPointIndex][1];
+        this.playerTransform.translation = [...checkpoint.translation];
+        //this.playerTransform.rotation = [-1, 0, 0, 0];
+        this.yaw = checkpoint.yaw;
+        this.pitch = checkpoint.pitch;
+
+        // enable movement of onRespawn objects
+        for (const node of this.OnRespawnMovingObjects) {
+            node.getComponentOfType(Entity).resetPos();
+            node.getComponentOfType(Entity).movingEnabled = node.getComponentOfType(Entity).movingSinceCheckPoint <= this.currCheckPointIndex;
+        }
+
+        // change view
+        if (this.currCheckPointIndex == 4) {
+            this.changeTo2D();
+        }
+        else {
+            this.changeTo3D();
+        }
     }
 
-    checkForCheckpoints() {
-        const nextCheckPoint = this.checkPoints[this.currCheckPointIndex + 1]
-        if (this.playerTransform.translation[0] > nextCheckPoint[0] - 1.0 && this.playerTransform.translation[0] < nextCheckPoint[0] + 1.0 &&
-            this.playerTransform.translation[1] > nextCheckPoint[1] - 1.0 && this.playerTransform.translation[1] < nextCheckPoint[1] + 1.0 &&
-            this.playerTransform.translation[2] > nextCheckPoint[2] - 1.0 && this.playerTransform.translation[2] < nextCheckPoint[2] + 1.0)
-        {
-            this.currCheckPointIndex++;
-            this.currKillYIndex++;
+    checkForNewCheckpoint(object) {
+        if (!object.checkPointIndex) return;
+
+        if (object.checkPointIndex > this.currCheckPointIndex) {
+            // new check point reached
+            this.currCheckPointIndex = object.checkPointIndex;
             showBottomText("Checkpoint reached!");
         }
     }
@@ -220,25 +258,25 @@ export class Player {
         const onObject = this.isOnObject();
         if (onObject) {
             this.velocityY = 0;
-        }
+            // if onObject and isJumping, then reset all jump parameters
+            if (this.isJumping) {
+                this.isJumping = false;
+                this.isDoubleJumping = false;
+            }  // else if onObject and attemptJump but not isJumping, then jump
+            else if (this.attemptJump && !this.isJumping) {
+                this.isJumping = true;
+                this.velocityY = this.jumpVelocity;
 
-        // if onObject and isJumping, then reset all jump parameters
-        if (onObject && this.isJumping) {
-            this.velocityY = 0;
-            this.isJumping = false;
-            this.isDoubleJumping = false;
-        }  // else if onObject and attemptJump but not isJumping, then jump
-        else if (onObject && this.attemptJump && !this.isJumping) {
-            this.isJumping = true;
-            this.velocityY = this.jumpVelocity;
+            }
         }  // else if not onObject, then apply gravity/change Y according to gravity
-        else if (!onObject) {
+        else {
             // double jump magic
             if (this.isJumping && this.attemptDoubleJump && !this.isDoubleJumping && !this.attemptJump) {
                 this.isDoubleJumping = true;
                 this.velocityY = this.doubleJumpVelocity;
             }
             this.velocityY += this.gravity * dt;
+
             this.playerTransform.translation[1] += this.velocityY * dt;
         }
     }
@@ -249,6 +287,9 @@ export class Player {
             if (object.aabb === undefined || object === this.node) continue;
 
             if (this.checkCollision(player, object)) {
+
+                this.checkForNewCheckpoint(object);
+
                 if (object.isTrap){
                     this.respawn();
                     return true;
@@ -256,6 +297,7 @@ export class Player {
                 if (this.velocityY > 0) {
                     return false;
                 }
+
                 const distanceBetweenPlayersBottomAndObjectsTop = this.physics.getTransformedAABB(object).max[1] - this.playerTransform.translation[1];
                 if (this.spiderManJump || Math.abs(distanceBetweenPlayersBottomAndObjectsTop) < 0.01) {  // Math.abs not necessary afaik (wasn't tested without though)
                     return true;
@@ -286,6 +328,7 @@ export class Player {
         const verticalRotationView = Math.PI / 3;  // up down rotation limit
 
         this.pitch = Math.min(Math.max(this.pitch, -verticalRotationView), verticalRotationView);
+
         this.yaw = ((this.yaw % twopi) + twopi) % twopi;
     }
 

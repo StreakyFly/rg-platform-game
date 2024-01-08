@@ -53,6 +53,9 @@ html {
         0 0 10px var(--fire-effect-shadow2),
         0 0 15px var(--fire-effect-shadow3),
         0 0 20px var(--fire-effect-shadow4);
+}
+
+.fireAn button:hover {
     animation: fire-glow 1s infinite alternate;
 }
 
@@ -137,4 +140,13 @@ html {
 
 #loadingText {
     color: #fff;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fadein button {
+    animation: fadeIn 2s ease-in-out;
 }

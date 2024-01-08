@@ -19,12 +19,23 @@ import { UpdateSystem } from '../../common/engine/systems/UpdateSystem.js';
 import { calculateAxisAlignedBoundingBox, mergeAxisAlignedBoundingBoxes } from "../../common/engine/core/MeshUtils.js";
 
 import { Renderer } from "./Renderer.js";
+
 import { Physics } from './Physics.js';
+
+// import { Player } from "./DEBUG_Player.js";
 import { Player } from "./Player.js";
 
 import { Entity } from "./entities/Entity.js";
 import { Light } from "./Light.js";
 
+class RespawnPoint {
+    constructor(checkPointTransform, yaw, pitch) {
+        this.translation = checkPointTransform.translation;
+        this.rotation = checkPointTransform.rotation;
+        this.yaw = yaw;
+        this.pitch = pitch;
+    }
+}
 
 export class Game {
     constructor() {
@@ -45,50 +56,94 @@ export class Game {
 
         this.scene = loader.loadScene(loader.defaultScene);
 
-        const traps = loader.gltf.nodes.filter(element => element.name.includes("Trap"));
-        for (const trap of traps){
-            this.scene.children[trap.mesh].isTrap = true;
-        }
+        let checkPointMap = new Map();
+        let OnRespawnMovingObjectNodes = [];
+        // assign gameObject roles
+        for (let i = 0; i < loader.gltf.nodes.length; i++) {
+            const blendObject = loader.gltf.nodes[i];
+            const blendObjectNode = this.scene.children[i]
 
-        // testing
-        const movingTraps = loader.gltf.nodes.filter(element => element.name.includes("Moving"));
-        for (const trap of movingTraps){
-            const movingTrapNode = this.scene.children[trap.mesh];
-            const movingTrapTransform = movingTrapNode.getComponentOfType(Transform);
-            let movingTrapTranslation = [0, 0.005, 0];
-            const maxTranslationDistance = 1;
-            movingTrapNode.addComponent(new Entity(movingTrapTransform, movingTrapTranslation, maxTranslationDistance));
-        }
+            // assign checkPoints
+            if (blendObject.name.includes("CheckPoint")) {
+                const valueArray = blendObject.name.split("_");
+                blendObjectNode.checkPointIndex = parseInt(valueArray[0].split("")[valueArray[0].length - 1]);
+                /*
+                const yaw = valueArray[1].split("")[valueArray[1].length - 1] * Math.PI;
+                const pitch = valueArray[2].split("")[valueArray[2].length - 1] * Math.PI;*/
+                const yaw = Math.PI;
+                const pitch = 0;
 
-        // testing
-        const movingPlatforms = loader.gltf.nodes.filter(element => element.name.includes("MovablePlatform"));
-        for (const trap of movingPlatforms){
-            const movingTrapNode = this.scene.children[trap.mesh];
-            const movingTrapTransform = movingTrapNode.getComponentOfType(Transform);
-            let movingTrapTranslation = [0.002, 0, 0];
-            const maxTranslationDistance = 1;
-            movingTrapNode.addComponent(new Entity(movingTrapTransform, movingTrapTranslation, maxTranslationDistance));
+                checkPointMap.set(blendObjectNode.checkPointIndex, new RespawnPoint(blendObject, yaw, pitch))
+            }
+
+            // assign  traps
+            if (blendObject.name.includes("Trap")) blendObjectNode.isTrap = true;
+
+            // assign moving objects
+            if (blendObject.name.includes("Moving")) {
+                let maxTranslationDistance = 1;
+                let movingObjectTranslation = [0, 0, 0];
+                let moveBothDirections = !blendObject.name.includes("OneDir");
+                let movingSinceCheckPoint = 0;
+
+                if (blendObject.name.includes("UP")) {
+                    movingObjectTranslation = [0, 0.005, 0];
+                }
+                else if (blendObject.name.includes("DOWN")) {
+                    movingObjectTranslation = [0, -0.005, 0];
+                }
+                else if (blendObject.name.includes("LEFT")) {
+                    movingObjectTranslation = [-0.002, 0, 0];
+                }
+                else if (blendObject.name.includes("RIGHT")) {
+                    movingObjectTranslation = [0.002, 0, 0];
+                }
+                else if (blendObject.name.includes("FORWARD")) {
+                    movingObjectTranslation = [0, 0, 0.002];
+                }
+                else if (blendObject.name.includes("BACKWARDS")) {
+                    movingObjectTranslation = [0, 0, -0.002];
+                }
+                else if (blendObject.name.includes("CHASETRAP")) {
+                    maxTranslationDistance = 20.63;
+                    movingObjectTranslation = [0, 0, -0.008];
+                }
+
+                if (blendObject.name.includes("MovingOnSpawn")) {
+                    movingSinceCheckPoint = parseInt(blendObject.name.split("MovingOnSpawn")[1].split("")[0]);
+                    OnRespawnMovingObjectNodes.push(blendObjectNode);
+                }
+
+                if (blendObject.name.includes("Platform")) blendObjectNode.isEntityPlatform = true;
+
+                blendObjectNode.addComponent(new Entity(blendObjectNode.getComponentOfType(Transform), movingObjectTranslation, maxTranslationDistance, moveBothDirections, movingSinceCheckPoint));
+            }
         }
 
         // initialize camera
         this.camera = loader.loadNode('Camera');
-        // camera.addComponent(new Transform({
+        // this.camera.addComponent(new Transform({
         //     translation: [0, 1, 0],
         // }));
 
         this.camera.getComponentOfType(Camera).fovy = 1;
         this.camera.getComponentOfType(Camera).near = 0.01;
-        this.camera.getComponentOfType(Camera).aspect = 0.3 / 0.5;
+        this.camera.getComponentOfType(Camera).aspect = 0.6;  // 0.3 / 0.5;
 
         // initialize player
-        const playerNode = loader.loadNode('Player.007');
+        const playerNode = loader.loadNode('Player');
         const playerTransform = playerNode.getComponentOfType(Transform);
-        playerNode.addComponent(new Player(playerTransform, this.camera, playerNode, this.canvas));
+        playerNode.addComponent(new Player(playerTransform, this.camera, playerNode, OnRespawnMovingObjectNodes, this.canvas));
         playerNode.isDynamic = true;
         playerNode.aabb = {
             min: [-0.2, -0.2, -0.2],
             max: [0.2, 0.2, 0.2],
         };
+
+        for (let i = 0; i < checkPointMap.size; i++) {
+            playerNode.getComponentOfType(Player).checkPoints[i] = checkPointMap.get(i);
+        }
+
         this.scene.addChild(playerNode);
 
 
@@ -121,29 +176,19 @@ export class Game {
             }),
         });
 
+
         this.scene.traverse(node => {
             const model = node.getComponentOfType(Model);
             if (!model) {
                 return;
             }
+
             node.isStatic = true;
-            /*
-            console.log(node.nodeIndex)
-            console.log(node.name)
-            console.log(node.getComponentOfType(Model).nodeIndex)
-            console.log(node.getComponentOfType(Model).name)
-            */
-            // build trapList
 
             model.primitives[0].material.metalnessTexture = texture  // TODO set this in Blender instead!
             model.primitives[0].material.roughnessTexture = texture  // TODO set this in Blender instead!
         });
 
-        /*
-        let l = this.scene.find(element => element.name.includes("Trap"));
-        l.find(element => element.name === nameOrIndex);
-        console.log(l)
-        */
         playerNode.isStatic = false;
         playerNode.isDynamic = true;
 
@@ -158,7 +203,6 @@ export class Game {
         new ResizeSystem({ canvas: this.canvas, resize: this.resize.bind(this) }).start();
         new UpdateSystem({ update: this.update.bind(this), render: this.render.bind(this) }).start();
     }
-
 
     createLights(n) {
         const colors = [
@@ -193,7 +237,6 @@ export class Game {
     }
 
 
-
     update(time, dt) {
         if (pause) return;
         this.scene.traverse(node => {
@@ -205,7 +248,7 @@ export class Game {
     }
 
     render() {
-        this.renderer.render(this.scene, this.camera, this.skybox, this.light || this.lights);
+        this.renderer.render(this.scene, this.camera, this.skybox, this.lights);
     }
 
     resize({ displaySize: { width, height } }) {
@@ -239,7 +282,7 @@ export class Game {
             new JSONLoader().loadMesh('../../../common/models/bunny.json'),
             new ImageLoader().load('../../game/assets/images/grayscale.png'),
             // new ImageLoader().load('../../game/assets/images/cambridge.webp'),
-            new ImageLoader().load('../../game/assets/images/sky.jpg'),
+            new ImageLoader().load('../../game/assets/images/sky.png'),
         ]);
 
         this.skybox = new Node();

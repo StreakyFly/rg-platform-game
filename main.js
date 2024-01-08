@@ -1,5 +1,4 @@
 import { Game } from './game/scripts/Game.js';
-import * as Color from './game/scripts/Color.js';
 
 document.querySelector('.loader-container').remove();
 
@@ -13,6 +12,14 @@ window.pauseToggle = togglePause;
 
 export let pause = false;
 let mainMenu = true;
+
+// TODO fix this, if you click too early it shows an error
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        document.querySelector('.fadein').classList.remove('fadein');
+    }, 2000);
+});
+
 
 document.addEventListener('keydown', function (event) {
     if (event.key === 'p' && !mainMenu) {
@@ -47,7 +54,7 @@ function startGame() {
     bodyElement.classList.add('game');
 
     // bodyElement.classList.remove('game');
-    // bodyElement.classList.add('main-menu');  // TODO FIX: this shouldn't change the menu LAYOUTTTTTT
+    // bodyElement.classList.add('main-menu');  // TODO FIX: this shouldn't change the menu LAYOUTTTTTTTTTTTTTTTT
     updateLoadingScreen(45);
 
     const game = new Game();
@@ -56,6 +63,7 @@ function startGame() {
             setTimeout(() => {
                 updateLoadingScreen(80);
             }, 1000);
+            bodyElement.classList.add('shown');
             bodyElement.classList.add('bottomText');
             console.log("Game initialized!");
             updateLoadingScreen(100);

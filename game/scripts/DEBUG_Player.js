@@ -1,8 +1,7 @@
 import { quat, vec3 } from '../../lib/gl-matrix-module.js';
-import { Transform } from '../../common/engine/core/Transform.js';
 
 export class Player {
-    constructor(playerTransform, playerCamera, node, domElement, {
+    constructor(playerTransform, playerCamera, node, OnRespawnMovingObjects, domElement, {
         pointerSensitivity = 0.002,
     } = {}) {
         this.playerTransform = playerTransform;
@@ -21,14 +20,13 @@ export class Player {
         this.acceleration = 1000;  // basically instant max speed
         this.maxSpeed = 2.5;
         this.decay = 1;  // 0.99 before // 1 = no decay
-        this.gravity = -9.81 * 1.1;
 
-        this.jumpVelocity = 3.0;
-        this.doubleJumpVelocity = 3.5;  // 4.5 before
         this.velocityY = 0;
         this.maxVelocityY = 7;
 
         this.initHandlers();
+
+        this.checkPoints = [];
     }
 
     initHandlers() {

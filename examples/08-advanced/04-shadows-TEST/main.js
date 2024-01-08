@@ -55,7 +55,7 @@ shadowCamera.addComponent(new Camera({
 
 
 
-const playerNode = loader.loadNode('Player.007');
+const playerNode = loader.loadNode('Player');
 playerNode.addComponent(new Player(playerNode.getComponentOfType(Transform), camera, playerNode, canvas));
 // playerNode.addChild(shadowCamera);
 scene.addChild(playerNode);
