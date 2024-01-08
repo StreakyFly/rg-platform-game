@@ -44,7 +44,7 @@ export class Player {
 
         this.physics = new Physics();
 
-        this.spiderManJump = false;
+        this.spiderManJump = true;
 
         this.initHandlers();
 

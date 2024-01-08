@@ -18,11 +18,12 @@ import { ResizeSystem } from '../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../common/engine/systems/UpdateSystem.js';
 import { calculateAxisAlignedBoundingBox, mergeAxisAlignedBoundingBoxes } from "../../common/engine/core/MeshUtils.js";
 
+import { Renderer } from "./Renderer.js";
 import { Physics } from './Physics.js';
 import { Player } from "./Player.js";
-import { Entity } from "./entities/Entity.js";
 
-import { Renderer } from "./Renderer.js";
+import { Entity } from "./entities/Entity.js";
+import { Light } from "./Light.js";
 
 
 export class Game {
@@ -34,6 +35,7 @@ export class Game {
         this.camera = null;
         this.physics = null;
         this.skybox = null;
+        this.lights = [];
     }
 
     async start() {
@@ -89,24 +91,59 @@ export class Game {
         };
         this.scene.addChild(playerNode);
 
+
+        // Player test light
+        const light = new Node();
+        light.addComponent(new Transform({
+            // translation: [0, 2, -5],
+            translation: [0, 1, 0],
+        }));
+        const newLight = new Light({
+            color: [255, 189, 89],
+            intensity: 3,
+            attenuation: [0.001, 0, 0.3]
+        });
+
+        light.addComponent(newLight);
+        // this.scene.addChild(light);
+        playerNode.addChild(light);
+        this.lights.push(light);
+
+        this.createLights(15);
+        console.log(this.lights);
+
+        const white = new ImageData(new Uint8ClampedArray([255, 255, 255, 255]), 1, 1);
+        const texture = new Texture({
+            image: white,
+            sampler: new Sampler({
+                minFilter: 'nearest',
+                magFilter: 'nearest',
+            }),
+        });
+
         this.scene.traverse(node => {
             const model = node.getComponentOfType(Model);
             if (!model) {
                 return;
             }
-
             node.isStatic = true;
             /*
             console.log(node.nodeIndex)
             console.log(node.name)
             console.log(node.getComponentOfType(Model).nodeIndex)
-            console.log(node.getComponentOfType(Model).name)*/
+            console.log(node.getComponentOfType(Model).name)
+            */
             // build trapList
+
+            model.primitives[0].material.metalnessTexture = texture  // TODO set this in Blender instead!
+            model.primitives[0].material.roughnessTexture = texture  // TODO set this in Blender instead!
         });
-/*
+
+        /*
         let l = this.scene.find(element => element.name.includes("Trap"));
         l.find(element => element.name === nameOrIndex);
-        console.log(l)*/
+        console.log(l)
+        */
         playerNode.isStatic = false;
         playerNode.isDynamic = true;
 
@@ -122,6 +159,41 @@ export class Game {
         new UpdateSystem({ update: this.update.bind(this), render: this.render.bind(this) }).start();
     }
 
+
+    createLights(n) {
+        const colors = [
+            [255, 0, 0],
+            [0, 255, 0],
+            [0, 0, 255],
+            [255, 255, 0],  // Yellow
+            [255, 0, 255],  // Magenta
+            [0, 255, 255],  // Cyan
+        ];
+
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < 3; j++) {
+                const light = new Node();
+
+                const translation = [j * 3 - 3, 2, -2 * i];
+                light.addComponent(new Transform({
+                    translation: translation,
+                }));
+
+                const newLight = new Light({
+                    color: colors[(i * 3 + j) % colors.length],  // Assign a different color for each light
+                    intensity: 2,
+                    attenuation: [0.001, 0, 0.1]
+                });
+
+                light.addComponent(newLight);
+
+                this.lights.push(light);
+            }
+        }
+    }
+
+
+
     update(time, dt) {
         if (pause) return;
         this.scene.traverse(node => {
@@ -133,7 +205,7 @@ export class Game {
     }
 
     render() {
-        this.renderer.render(this.scene, this.camera, this.skybox);
+        this.renderer.render(this.scene, this.camera, this.skybox, this.light || this.lights);
     }
 
     resize({ displaySize: { width, height } }) {

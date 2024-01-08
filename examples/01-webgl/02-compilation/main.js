@@ -46,7 +46,7 @@ if (!fragmentStatus) {
 // Create a program object.
 const program = gl.createProgram();
 
-// Attach both shaders - both are mandatory.
+// Attach both shadersOLD - both are mandatory.
 gl.attachShader(program, vertexShader);
 gl.attachShader(program, fragmentShader);
 

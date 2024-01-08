@@ -10,7 +10,7 @@ const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl2');
 
 // You can create buffers and connect them to the corresponding
-// attribute locations before compiling the shaders. In this case,
+// attribute locations before compiling the shadersOLD. In this case,
 // the attribute locations have to be known in advance.
 
 // Create the buffer with vertex positions.

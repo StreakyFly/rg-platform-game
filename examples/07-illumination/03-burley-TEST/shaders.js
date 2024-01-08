@@ -1,72 +1,4 @@
-const skyboxVertex = `#version 300 es
-layout (location = 0) in vec3 aPosition;
-
-uniform mat4 uViewMatrix;
-uniform mat4 uProjectionMatrix;
-
-out vec3 vPosition;
-
-void main() {
-    vPosition = aPosition;
-    vec3 rotated = mat3(uViewMatrix) * aPosition;
-    vec4 projected = uProjectionMatrix * vec4(rotated, 1);
-    gl_Position = projected.xyww;
-}
-`;
-
-const skyboxFragment = `#version 300 es
-precision mediump float;
-
-uniform mediump sampler2D uEnvmap;
-
-in vec3 vPosition;
-
-out vec4 oColor;
-
-vec2 directionToTexcoord(vec3 v) {
-    const float PI = 3.14159265358979;
-    return vec2((atan(v.z, v.x) / PI) * 0.5 + 0.5, acos(v.y) / PI);
-}
-
-void main() {
-    oColor = textureLod(uEnvmap, directionToTexcoord(normalize(vPosition)), 0.0);
-}
-`;
-
-const envmapVertex = `#version 300 es
-
-layout (location = 0) in vec4 aPosition;
-layout (location = 1) in vec2 aTexCoord;
-
-uniform mat4 uModelViewProjection;
-
-out vec2 vTexCoord;
-
-void main() {
-    vTexCoord = aTexCoord;
-    gl_Position = uModelViewProjection * aPosition;
-}
-`;
-
-const envmapFragment = `#version 300 es
-precision mediump float;
-precision mediump sampler2D;
-
-uniform sampler2D uBaseTexture;
-uniform vec4 uBaseFactor;
-
-in vec2 vTexCoord;
-
-out vec4 oColor;
-
-void main() {
-    vec4 baseColor = texture(uBaseTexture, vTexCoord);
-    oColor = uBaseFactor * baseColor;
-}
-`;
-
-
-const burleyVertex = `#version 300 es
+const vertex = `#version 300 es
 layout (location = 0) in vec3 aPosition;
 layout (location = 1) in vec2 aTexCoord;
 layout (location = 2) in vec3 aNormal;
@@ -88,7 +20,7 @@ void main() {
 }
 `;
 
-const burleyFragment = `#version 300 es
+const fragment = `#version 300 es
 precision mediump float;
 precision mediump sampler2D;
 
@@ -109,9 +41,7 @@ struct Light {
     float intensity;
 };
 
-#define MAX_LIGHTS 50
-uniform int uNumLights;
-uniform Light uLights[MAX_LIGHTS];
+uniform Light uLight;
 
 in vec3 vPosition;
 in vec3 vNormal;
@@ -187,50 +117,33 @@ vec3 getLightIntensity(Light light, vec3 surfacePosition) {
 
 void main() {
     vec3 N = normalize(vNormal);
+    vec3 L = normalize(uLight.position - vPosition);
     vec3 V = normalize(uCameraPosition - vPosition);
-    vec3 H = normalize(V + normalize(uLights[0].position - vPosition));
+    vec3 H = normalize(V + L);
 
-    vec3 finalColor = vec3(0.0);
+    float NdotL = clamp(dot(N, L), 0.0, 1.0);
+    float NdotV = clamp(dot(N, V), 0.0, 1.0);
+    float NdotH = clamp(dot(N, H), 0.0, 1.0);
+    float VdotH = clamp(dot(V, H), 0.0, 1.0);
 
-    for (int i = 0; i < uNumLights; ++i) {
-        vec3 L = normalize(uLights[i].position - vPosition);
-        float NdotL = clamp(dot(N, L), 0.0, 1.0);
-        float NdotV = clamp(dot(N, V), 0.0, 1.0);
-        float NdotH = clamp(dot(N, H), 0.0, 1.0);
-        float VdotH = clamp(dot(V, H), 0.0, 1.0);
+    vec3 baseColor = texture(uBaseTexture, vTexCoord).rgb * uBaseFactor;
+    float metalness = texture(uMetalnessTexture, vTexCoord).r * uMetalnessFactor;
+    float perceptualRoughness = texture(uRoughnessTexture, vTexCoord).r * uRoughnessFactor;
+    float roughness = perceptualRoughness * perceptualRoughness;
 
-        vec3 baseColor = texture(uBaseTexture, vTexCoord).rgb * uBaseFactor;
-        float metalness = texture(uMetalnessTexture, vTexCoord).r * uMetalnessFactor;
-        float perceptualRoughness = texture(uRoughnessTexture, vTexCoord).r * uRoughnessFactor;
-        float roughness = perceptualRoughness * perceptualRoughness;
+    vec3 f0 = mix(vec3(0.04), baseColor, metalness);
+    vec3 f90 = vec3(1);
+    vec3 diffuseColor = mix(baseColor, vec3(0), metalness);
+    vec3 lightIntensity = getLightIntensity(uLight, vPosition);
 
-        vec3 f0 = mix(vec3(0.04), baseColor, metalness);
-        vec3 f90 = vec3(1);
-        vec3 diffuseColor = mix(baseColor, vec3(0), metalness);
+    vec3 diffuse = lightIntensity * NdotL * BRDF_diffuse(f0, f90, diffuseColor, VdotH);
+    vec3 specular = lightIntensity * NdotL * BRDF_specular(f0, f90, roughness, VdotH, NdotL, NdotV, NdotH);
 
-        vec3 lightIntensity = getLightIntensity(uLights[i], vPosition);
-
-        vec3 diffuse = lightIntensity * NdotL * BRDF_diffuse(f0, f90, diffuseColor, VdotH);
-        vec3 specular = lightIntensity * NdotL * BRDF_specular(f0, f90, roughness, VdotH, NdotL, NdotV, NdotH);
-
-        finalColor += diffuse + specular;
-    }
-
+    vec3 finalColor = diffuse + specular;
     oColor = vec4(linearTosRGB(finalColor), 1);
 }
 `;
 
 export const shaders = {
-    skybox: {
-        vertex: skyboxVertex,
-        fragment: skyboxFragment,
-    },
-    envmap: {
-        vertex: envmapVertex,
-        fragment: envmapFragment,
-    },
-    burley: {
-        vertex: burleyVertex,
-        fragment: burleyFragment
-    },
+    burley: { vertex, fragment }
 };

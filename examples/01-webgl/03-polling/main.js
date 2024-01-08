@@ -8,7 +8,7 @@ import { shaders } from './shaders.js';
 const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl2');
 
-// Compile the shaders and create the program.
+// Compile the shadersOLD and create the program.
 const vertexShader = WebGL.createShader(gl, shaders.test.vertex, gl.VERTEX_SHADER);
 const fragmentShader = WebGL.createShader(gl, shaders.test.fragment, gl.FRAGMENT_SHADER);
 const { program } = WebGL.createProgram(gl, [ vertexShader, fragmentShader ]);

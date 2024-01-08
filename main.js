@@ -47,7 +47,7 @@ function startGame() {
     bodyElement.classList.add('game');
 
     // bodyElement.classList.remove('game');
-    // bodyElement.classList.add('main-menu');  // TODO FIX: this shouldn't change the menu LAYOUTTTTTTTTTTTTTTTT
+    // bodyElement.classList.add('main-menu');  // TODO FIX: this shouldn't change the menu LAYOUTTTTTT
     updateLoadingScreen(45);
 
     const game = new Game();
@@ -56,7 +56,7 @@ function startGame() {
             setTimeout(() => {
                 updateLoadingScreen(80);
             }, 1000);
-            bodyElement.classList.add('shown');
+            bodyElement.classList.add('bottomText');
             console.log("Game initialized!");
             updateLoadingScreen(100);
             setTimeout(() => {
@@ -65,6 +65,7 @@ function startGame() {
         })
         .catch(error => {
             console.error('Error during game initialization:', error);
+            updateLoadingScreen(100, true);
         });
 }
 
@@ -89,8 +90,13 @@ function hideLoadingScreen() {
 }
 
 
-function updateLoadingScreen(percentage) {
+function updateLoadingScreen(percentage, error=false) {
     document.getElementById('loadingBar').style.width = percentage + '%';
+    if (error) {
+        document.getElementById('loadingText').innerText = 'Failed to load the game.';
+        document.getElementById('loadingBar').style.backgroundColor = 'red';
+        return;
+    }
     document.getElementById('loadingText').innerText = 'Loading... ' + percentage + '%';
 }
 
