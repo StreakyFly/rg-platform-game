@@ -48,15 +48,12 @@ export class Renderer extends BaseRenderer {
         gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, projectionMatrix);
 
-        gl.uniform3fv(uniforms.uCameraPosition,
-            mat4.getTranslation(vec3.create(), getGlobalModelMatrix(camera)));
+        gl.uniform3fv(uniforms.uCameraPosition, mat4.getTranslation(vec3.create(), getGlobalModelMatrix(camera)));
 
         const lightComponent = light.getComponentOfType(Light);
 
-        gl.uniform3fv(uniforms.uLightColor,
-            vec3.scale(vec3.create(), lightComponent.color, 1 / 255));
-        gl.uniform3fv(uniforms.uLightDirection,
-            vec3.normalize(vec3.create(), lightComponent.direction));
+        gl.uniform3fv(uniforms.uLightColor, vec3.scale(vec3.create(), lightComponent.color, 1 / 255));
+        gl.uniform3fv(uniforms.uLightDirection, vec3.normalize(vec3.create(), lightComponent.direction));
 
         this.renderNode(scene);
     }

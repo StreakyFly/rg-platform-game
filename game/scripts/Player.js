@@ -1,13 +1,18 @@
 import { quat, vec3 } from '../../lib/gl-matrix-module.js';
+
 import { Transform } from '../../common/engine/core/Transform.js';
+
 import { Physics } from "./Physics.js";
-import {showBottomText, showTopText} from "../../main.js";
 import { Entity } from './entities/Entity.js';
+
+import { showBottomText, showTopText } from "../../main.js";
+
 
 const cameraView = {
     "3D": "3d",
     "2D": "2d",
 };
+
 
 export class Player {
     constructor(playerTransform, playerCamera, node, OnRespawnMovingObjects, domElement, {
@@ -48,14 +53,18 @@ export class Player {
 
         this.spiderManJump = false;
 
-        this.initHandlers();
-
         this.checkPoints = [];
+        this.orbHolderArray = [];
+        this.validOrbHolderInteraction = false;
+        this.validOrbHolder = null;
+        this.collectedOrbArray = [];
 
         this.currCheckPointIndex = 0;
         this.killYMin = -5;
         this.killYMax = 21;
         this.currKillYIndex = 0;
+
+        this.initHandlers();
     }
 
     changeTo2D() {
@@ -63,7 +72,7 @@ export class Player {
         //this.playerTransform.translation = [0, 0, 0];
         this.yaw = 0;
         this.view = cameraView['2D'];
-        this.playerCamera.getComponentOfType(Transform).translation[0] = 5;
+        this.playerCamera.getComponentOfType(Transform).translation[0] = 3.5;
         const rotation = quat.create();
         quat.rotateY(rotation, rotation, Math.PI / 2);
         this.playerCamera.getComponentOfType(Transform).rotation = rotation;
@@ -173,6 +182,10 @@ export class Player {
             return;
         }
 
+        if (this.keys['KeyF'] && this.validOrbHolderInteraction && this.validOrbHolder) {
+            this.validOrbHolder.playerOrbInteraction(this.collectedOrbArray);
+        }
+
         // update velocity based on acceleration.
         vec3.scaleAndAdd(this.velocity, this.velocity, acc, dt * this.acceleration);
 
@@ -218,6 +231,8 @@ export class Player {
         }
 
         this.handleJump(dt);
+
+        this.handleOrbHolderDetection();
     }
 
     respawn() {
@@ -235,7 +250,7 @@ export class Player {
         }
 
         // change view
-        if (this.currCheckPointIndex === 4) {
+        if (this.currCheckPointIndex === 3) {
             this.changeTo2D();
         }
         else {
@@ -280,18 +295,37 @@ export class Player {
         }
     }
 
+    handleOrbHolderDetection() {
+        this.validOrbHolderInteraction = false;
+        this.validOrbHolder = null;
+
+        // detect if in interaction range
+        for (const orbHolder of this.orbHolderArray) {
+            this.validOrbHolderInteraction = orbHolder.isInteractionRangeValid(this.playerTransform.translation);
+            if (this.validOrbHolderInteraction) {
+                this.validOrbHolder = orbHolder;
+                return;
+            }
+        }
+    }
+
     isOnObject() {
         const player = this.node;
         for (const object of this.node.parent.children) {
             if (object.aabb === undefined || object === this.node) continue;
 
             if (this.checkCollision(player, object)) {
-                this.checkForNewCheckpoint(object);
-
-                if (object.isTrap) {
+                if (object.isTrap){
                     this.respawn();
                     return true;
                 }
+                if (object.isTeleport) {
+                    this.currCheckPointIndex = object.teleportToCheckpointIndex;
+                    this.respawn();
+                    return true;
+                }
+                this.checkForNewCheckpoint(object);
+
                 if (this.velocityY > 0) {
                     return false;
                 }

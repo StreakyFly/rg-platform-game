@@ -22,7 +22,8 @@ html {
     min-height: 100vh;
 }
 
-.main-menu {
+.main-menu,
+#leaderboard, #settings {
     width: 400px;
     display: flex;
     flex-direction: column;
@@ -46,13 +47,14 @@ html {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.main-menu button:hover {
+.main-menu button:hover,
+#leaderboard button:hover, #settings button:hover {
     background-color: var(--main-menu-hover-bg);
     transform: scale(1.05);
     box-shadow: 0 5px 15px var(--fire-effect-shadow1),
-        0 0 10px var(--fire-effect-shadow2),
-        0 0 15px var(--fire-effect-shadow3),
-        0 0 20px var(--fire-effect-shadow4);
+    0 0 10px var(--fire-effect-shadow2),
+    0 0 15px var(--fire-effect-shadow3),
+    0 0 20px var(--fire-effect-shadow4);
 }
 
 .fireAn button:hover {
@@ -67,16 +69,16 @@ html {
 @keyframes fire-glow {
     0% {
         box-shadow: 0 5px 5px var(--fire-effect-shadow1),
-            0 0 5px var(--fire-effect-shadow2),
-            0 0 10px var(--fire-effect-shadow3),
-            0 0 15px var(--fire-effect-shadow4);
+        0 0 5px var(--fire-effect-shadow2),
+        0 0 10px var(--fire-effect-shadow3),
+        0 0 15px var(--fire-effect-shadow4);
     }
 
     100% {
         box-shadow: 0 5px 5px var(--fire-effect-shadow1),
-            0 0 12px var(--fire-effect-shadow2),
-            0 0 12px var(--fire-effect-shadow3),
-            0 0 17px var(--fire-effect-shadow4);
+        0 0 12px var(--fire-effect-shadow2),
+        0 0 12px var(--fire-effect-shadow3),
+        0 0 17px var(--fire-effect-shadow4);
     }
 }
 
@@ -143,10 +145,105 @@ html {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .fadein button {
     animation: fadeIn 2s ease-in-out;
+}
+
+#leaderboard, #settings {
+    font-family: 'Arial', sans-serif;
+    font-size: 16px;
+    border: 1px solid #eee;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 15px;
+    height: 300px;
+    width: 500px;
+    background-color: #674238;
+    overflow: scroll;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+:is(th) {
+    text-align: center;
+}
+
+th {
+    background-color: #442D2E;
+    border-bottom: 2px solid #ccc;
+}
+
+tr:nth-child(odd) {
+    background-color: #442D2E;
+}
+
+tr:hover {
+    background-color: #f1f1f14a;
+}
+
+#lbHolder button, #backLB {
+    font-family: 'Caudex', sans-serif;
+    font-size: 32px;
+    margin-bottom: 32px;
+    padding: 10px 20px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background: url("../game/assets/images/button-texture.png") repeat scroll 0 0 transparent;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: absolute;
+    top: 82%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#settings button {
+    font-family: 'Caudex', sans-serif;
+    font-size: 16px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background: url("../game/assets/images/button-texture.png") repeat scroll 0 0 transparent;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    top: 30%;
+    margin-top: 30%;
+}
+
+#backLB:hover {
+    background-color: var(--main-menu-hover-bg);
+    box-shadow: 0 5px 15px var(--fire-effect-shadow1),
+    0 0 10px var(--fire-effect-shadow2),
+    0 0 15px var(--fire-effect-shadow3),
+    0 0 20px var(--fire-effect-shadow4);
+}
+
+#sensitivityValue {
+    padding-left: 10px;
 }

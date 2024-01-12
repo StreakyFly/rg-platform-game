@@ -1,8 +1,8 @@
-import { vec3, mat4 } from '../../lib/gl-matrix-module.js';
+import { vec3, mat4 } from '../../../lib/gl-matrix-module.js';
 
-import * as WebGL from '../../common/engine/WebGL.js';
+import * as WebGL from '../../../common/engine/WebGL.js';
 
-import { BaseRenderer } from '../../common/engine/renderers/BaseRenderer.js';
+import { BaseRenderer } from '../../../common/engine/renderers/BaseRenderer.js';
 
 import {
     getLocalModelMatrix,
@@ -10,17 +10,19 @@ import {
     getGlobalViewMatrix,
     getProjectionMatrix,
     getModels,
-} from '../../common/engine/core/SceneUtils.js';
+} from '../../../common/engine/core/SceneUtils.js';
 
-import { Light } from "./Light.js";
+import { Light } from "../../../game/scripts/Light.js";
 
 import { shaders } from './shaders.js';
-
 
 export class Renderer extends BaseRenderer {
 
     constructor(gl) {
         super(gl);
+        this.doRenderBloom = 1.0;
+        this.renderLightsOrBloom = 1.0;
+
         gl.clearColor(0, 0, 0, 1);
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
@@ -30,12 +32,12 @@ export class Renderer extends BaseRenderer {
 
         this.programs = WebGL.buildPrograms(gl, shaders);
 
-        this.MAX_LIGHTS = 50;
+        this.MAX_LIGHTS = 200;
 
         this.emissionStrength = 10;
         this.preExposure = 1;
         this.postExposure = 1;
-        this.gamma = 1;
+        this.gamma = 1;  // 2.2
 
         this.bloomThreshold = 1.5;
         this.bloomKnee = 0.9;
@@ -53,6 +55,7 @@ export class Renderer extends BaseRenderer {
         this.createBloomBuffers();
         this.createLightsBuffer();
     }
+
 
     renderFinal() {
         const gl = this.gl;
@@ -82,13 +85,34 @@ export class Renderer extends BaseRenderer {
         gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
+
     render(scene, camera, skybox, lights) {
+        // this.gamma = 2.2;
         this.renderGeometry(scene, camera);
         this.renderBright();
         this.renderBloom();
+        // this.renderToCanvas();
+        // this.gamma = 1;
         this.renderSceneWithLights(scene, camera, skybox, lights);
+        // this.renderToCanvasSceneWithLights();
         this.renderFinal();
     }
+
+    // render(scene, camera, skybox, lights) {
+    //     if (this.renderLightsOrBloom > 0.5) {
+    //         this.gamma = 2.2;
+    //         this.renderGeometry(scene, camera);
+    //         this.renderBright();
+    //         if (this.doRenderBloom > 0.9) {
+    //             this.renderBloom();
+    //         }
+    //         this.renderToCanvas();
+    //     } else {
+    //         this.gamma = 1;
+    //         this.renderSceneWithLights(scene, camera, skybox, lights);
+    //         this.renderToCanvasSceneWithLights();
+    //     }
+    // }
 
     renderGeometry(scene, camera) {
         const gl = this.gl;
@@ -218,6 +242,26 @@ export class Renderer extends BaseRenderer {
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.bloomBuffers[0].texture);
+        gl.uniform1i(uniforms.uColor, 0);
+        gl.bindSampler(0, null);
+
+        gl.uniform1f(uniforms.uExposure, this.postExposure);
+        gl.uniform1f(uniforms.uGamma, this.gamma);
+
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+
+    renderToCanvasSceneWithLights() {
+        const gl = this.gl;
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+
+        const { program, uniforms } = this.programs.renderToCanvas;
+        gl.useProgram(program);
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.lightsFramebuffer.colorTexture); // Lights texture
         gl.uniform1i(uniforms.uColor, 0);
         gl.bindSampler(0, null);
 
@@ -379,6 +423,8 @@ export class Renderer extends BaseRenderer {
             };
         });
     }
+
+
 
     renderSceneWithLights(scene, camera, skybox, lights) {
         const gl = this.gl;

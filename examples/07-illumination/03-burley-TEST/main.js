@@ -90,7 +90,7 @@ light.addComponent(new Light());
 
 
 const playerNode = loader.loadNode('Player.007');
-playerNode.addComponent(new Player(playerNode.getComponentOfType(Transform), camera, playerNode, canvas));
+playerNode.addComponent(new Player(playerNode.getComponentOfType(Transform), camera, playerNode, [], canvas));
 playerNode.addChild(light);
 scene.addChild(playerNode);
 

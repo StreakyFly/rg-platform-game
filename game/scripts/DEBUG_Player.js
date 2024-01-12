@@ -1,4 +1,5 @@
 import { quat, vec3 } from '../../lib/gl-matrix-module.js';
+import {Transform} from "../../common/engine/core/Transform.js";
 
 export class Player {
     constructor(playerTransform, playerCamera, node, OnRespawnMovingObjects, domElement, {
@@ -18,7 +19,7 @@ export class Player {
         this.yaw = 0;
         this.velocity = [0, 0, 0];
         this.acceleration = 1000;  // basically instant max speed
-        this.maxSpeed = 2.5;
+        this.maxSpeed = 5;
         this.decay = 1;  // 0.99 before // 1 = no decay
 
         this.velocityY = 0;
@@ -56,7 +57,7 @@ export class Player {
         const sin = Math.sin(this.yaw);
         const forward = [-sin, 0, -cos];
         const right = [cos, 0, -sin];
-        const up = [0, 1, 0];
+        const up = [0, 2, 0];
 
         // map user input to the acceleration vector.
         const acc = vec3.create();
@@ -110,6 +111,10 @@ export class Player {
         let rotation = quat.create();
         quat.rotateY(rotation, rotation, this.yaw);
         this.playerTransform.rotation = rotation;
+
+        rotation = quat.create();
+        quat.rotateX(rotation, rotation, this.pitch);
+        this.playerCamera.getComponentOfType(Transform).rotation = rotation;
     }
 
     pointermoveHandler(e) {
@@ -122,6 +127,7 @@ export class Player {
         const verticalRotationView = Math.PI / 3;  // up down rotation limit
 
         this.pitch = Math.min(Math.max(this.pitch, -verticalRotationView), verticalRotationView);
+
         this.yaw = ((this.yaw % twopi) + twopi) % twopi;
     }
 

@@ -109,7 +109,7 @@ struct Light {
     float intensity;
 };
 
-#define MAX_LIGHTS 50
+#define MAX_LIGHTS 200
 uniform int uNumLights;
 uniform Light uLights[MAX_LIGHTS];
 

@@ -33,8 +33,8 @@ camera.addComponent(new OrbitController(camera, canvas, {
 scene.addChild(camera);
 
 
-const playerNode = loader.loadNode('Player.007');
-playerNode.addComponent(new Player(playerNode.getComponentOfType(Transform), camera, playerNode, canvas));
+const playerNode = loader.loadNode('Player');
+playerNode.addComponent(new Player(playerNode.getComponentOfType(Transform), camera, playerNode, [], canvas));
 scene.addChild(playerNode);
 
 
@@ -58,15 +58,15 @@ function resize({ displaySize: { width, height }}) {
 new ResizeSystem({ canvas, resize }).start();
 new UpdateSystem({ update, render }).start();
 
-const gui = new GUI();
-gui.add(renderer, 'colorEnabled');
-gui.add(renderer, 'occlusionEnabled');
-gui.add(renderer, 'occlusionStrength', 0, 10);
-gui.add(renderer, 'occlusionScale', 0, 2);
-gui.add(renderer, 'occlusionRange', 0, 2);
-gui.add(renderer, 'depthBias', 0, 0.5);
-gui.add(renderer, 'occlusionSampleCount',
-    [1, 2, 4, 8, 16, 32, 64]
-).onChange(value => renderer.createSSAOSamples());
+// const gui = new GUI();
+// gui.add(renderer, 'colorEnabled');
+// gui.add(renderer, 'occlusionEnabled');
+// gui.add(renderer, 'occlusionStrength', 0, 10);
+// gui.add(renderer, 'occlusionScale', 0, 2);
+// gui.add(renderer, 'occlusionRange', 0, 2);
+// gui.add(renderer, 'depthBias', 0, 0.5);
+// gui.add(renderer, 'occlusionSampleCount',
+//     [1, 2, 4, 8, 16, 32, 64]
+// ).onChange(value => renderer.createSSAOSamples());
 
 document.querySelector('.loader-container').remove();

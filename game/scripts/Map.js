@@ -1,1 +1,0 @@
-// Levels aka. map menu. Map with locations connected one after another, so they form a path, each location is one level

@@ -380,6 +380,7 @@ void main() {
 `;
 
 const renderToCanvasVertex = `#version 300 es
+
 const vec2 vertices[] = vec2[](
     vec2(-1, -1),
     vec2( 3, -1),
@@ -410,53 +411,6 @@ out vec4 oColor;
 void main() {
     vec4 color = texture(uColor, vPosition) * uExposure;
     oColor = vec4(pow(color.rgb, vec3(1.0 / uGamma)), 1);
-}
-`;
-
-
-const combineTexturesVertex = `#version 300 es
-const vec2 vertices[] = vec2[](
-    vec2(-1, -1),
-    vec2( 3, -1),
-    vec2(-1,  3)
-);
-
-out vec2 vPosition;
-
-void main() {
-    vec2 position = vertices[gl_VertexID];
-    vPosition = position * 0.5 + 0.5;
-    gl_Position = vec4(position, 0, 1);
-}
-`;
-
-const combineTexturesFragment = `#version 300 es
-precision mediump float;
-precision mediump sampler2D;
-
-uniform sampler2D uBloomTexture;
-uniform sampler2D uLightsTexture;
-uniform float uExposure;
-uniform float uGamma;
-uniform float uContrast;
-
-in vec2 vPosition;
-
-out vec4 oColor;
-
-void main() {
-    vec4 bloomColor = texture(uBloomTexture, vPosition);
-    vec4 lightsColor = texture(uLightsTexture, vPosition);
-
-    // vec4 combinedColor = bloomColor + lightsColor - 0.4;
-    vec4 combinedColor = (bloomColor * 0.5 + lightsColor * 0.5) + 0.1;
-    // vec4 combinedColor = mix(bloomColor, lightsColor, 0.5);
-
-    combinedColor.rgb = pow(combinedColor.rgb * uExposure, vec3(1.0 / uGamma));
-    
-    combinedColor.rgb = ((combinedColor.rgb - 0.5) * uContrast) + 0.5;  // change contrast
-
-    oColor = vec4(combinedColor.rgb, 1.0);
 }
 `;
 
@@ -496,10 +450,4 @@ export const shaders = {
         vertex: renderToCanvasVertex,
         fragment: renderToCanvasFragment,
     },
-
-    // combine bloom and light textures
-    combineTextures: {
-        vertex: combineTexturesVertex,
-        fragment: combineTexturesFragment,
-    }
 };

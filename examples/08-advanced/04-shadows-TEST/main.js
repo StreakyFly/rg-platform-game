@@ -13,6 +13,8 @@ import { Renderer } from './Renderer.js';
 import {GLTFLoader} from "../../../common/engine/loaders/GLTFLoader.js";
 import {Player} from "../../../game/scripts/DEBUG_Player.js";
 
+import {quat} from "../../../lib/gl-matrix-module.js";
+
 const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl2');
 const renderer = new Renderer(gl);
@@ -54,9 +56,8 @@ shadowCamera.addComponent(new Camera({
 // shadowCameraRoot.addChild(shadowCamera);
 
 
-
 const playerNode = loader.loadNode('Player');
-playerNode.addComponent(new Player(playerNode.getComponentOfType(Transform), camera, playerNode, canvas));
+playerNode.addComponent(new Player(playerNode.getComponentOfType(Transform), camera, playerNode, [], canvas));
 // playerNode.addChild(shadowCamera);
 scene.addChild(playerNode);
 

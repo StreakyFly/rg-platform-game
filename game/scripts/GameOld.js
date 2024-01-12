@@ -26,8 +26,6 @@ import { Physics } from './Physics.js';
 import { Player } from './Player.js';
 
 import { Entity } from './entities/Entity.js';
-import { OrbHolder } from './entities/OrbHolder.js';
-import { Orb } from './entities/Orb.js';
 import { RespawnPoint } from './RespawnPoint.js';
 import { Light } from './Light.js';
 
@@ -45,13 +43,6 @@ export class Game {
         this.checkPointMap = new Map();
         this.OnRespawnMovingObjectNodes = [];
         this.player = null;
-        this.orbHolderMap = new Map();
-        this.orbArray = [];
-        this.unlockableDoorArray = [];
-
-        this.frameCount = 0;
-        this.lastTime = window.performance.now();
-        this.fps = 0;
     }
 
     async start() {
@@ -70,9 +61,7 @@ export class Game {
 
 
         const black = new ImageData(new Uint8ClampedArray([0, 0, 0, 255]), 1, 1);
-        const white = new ImageData(new Uint8ClampedArray([255, 255, 255, 255]), 1, 1);
         const orange = new ImageData(new Uint8ClampedArray([255, 60, 0, 255]), 1, 1);
-        const blue = new ImageData(new Uint8ClampedArray([0, 0, 255, 255]), 1, 1);
 
         const emissionTexture = new Texture({
             image: black,
@@ -90,14 +79,7 @@ export class Game {
             }),
         });
 
-        const emissionTextureBlue = new Texture({
-            image: blue,
-            sampler: new Sampler({
-                minFilter: 'nearest',
-                magFilter: 'nearest',
-            }),
-        });
-
+        const white = new ImageData(new Uint8ClampedArray([255, 255, 255, 255]), 1, 1);
         const lightTexture = new Texture({
             image: white,
             sampler: new Sampler({
@@ -105,7 +87,6 @@ export class Game {
                 magFilter: 'nearest',
             }),
         });
-
         this.scene.traverse(node => {
             const model = node.getComponentOfType(Model);
             if (!model) {
@@ -122,83 +103,20 @@ export class Game {
         this.player.isStatic = false;
         this.player.isDynamic = true;
 
-
-        const emissionTextureCheckPoint = new Texture({
-            image: await new ImageLoader().load('../../game/assets/models/portal.png'),
-            sampler: new Sampler({
-                minFilter: 'nearest',
-                magFilter: 'nearest',
-            }),
-        });
-
-
-        // let count = 0;
-        // // TODO somethings wrong with textures in blender or why does this give glow to more objects??
-        // //  same texture is used for multiple models and not seperated. Also check the names, in case some models have exactly the same names
         // for (let i = 0; i < loader.gltf.nodes.length; i++) {
         //     const blendObject = loader.gltf.nodes[i];
-        //     // console.log(blendObject.name);
-        //     if (this.scene.children[i] !== undefined) {  // TODO and what object is undefined??
-        //         const blendObjectModel = this.scene.children[i].getComponentOfType(Model);
+        //     const blendObjectModel = this.scene.children[i].getComponentOfType(Model);
         //
-        //         if (blendObject.name.includes("LavaTrap")) {
-        //             if (count === 0 || count > 1) {
-        //                 count++;
-        //                 console.log(count);
-        //                 continue;
-        //             }
-        //             console.log(blendObject.name);
-        //             console.log("LENGTH:", blendObjectModel.primitives.length);
-        //             console.log(blendObjectModel.primitives);
-        //             blendObjectModel.primitives[0].material.emissionTexture = emissionTextureOrange;
-        //             count++;
-        //         }
-        //
-        //         if (blendObject.name.includes("CheckPoint")) {
-        //             console.log(blendObject.name);
-        //             blendObjectModel.primitives[0].material.emissionTexture = emissionTextureCheckPoint;
-        //         }
-        //
-        //         if (blendObject.name.includes("Orb_")) {
-        //             console.log(blendObject.name);
-        //             blendObjectModel.primitives[0].material.emissionTexture = emissionTextureBlue;
-        //         }
+        //     if (blendObject.name.includes("LavaTrap")) {
+        //         blendObjectModel.primitives[0].material.emissionTexture = emissionTextureOrange;
         //     }
         // }
-
-
-        // assign checkPoints into array based on their porper index order
-        for (let i = 0; i < this.checkPointMap.size; i++) {
-            this.player.getComponentOfType(Player).checkPoints[i] = this.checkPointMap.get(i);
-        }
-
-        // assign orbs and unlock doors to each orbHolder
-        let orbHolderArray = [];
-
-        for (const orbNode of this.orbArray) {
-            const orbHolder = this.orbHolderMap.get(orbNode.getComponentOfType(Orb).orbNum).getComponentOfType(OrbHolder);
-            orbHolder.orb = orbNode;
-        }
-
-        for (const unlockDoorNode of this.unlockableDoorArray) {
-            const orbHolder = this.orbHolderMap.get(unlockDoorNode.dropOrbHolderUnlockIndex).getComponentOfType(OrbHolder);
-            orbHolder.unlockDoor = unlockDoorNode.getComponentOfType(Entity);
-        }
-
-        for (const orbHolderNode of this.orbHolderMap.values()) {
-            const orbHolder = orbHolderNode.getComponentOfType(OrbHolder);
-            orbHolderArray.push(orbHolder);
-        }
-
-        this.player.getComponentOfType(Player).orbHolderArray = orbHolderArray;
-
-
 
         if (!this.scene || !this.camera) {
             throw new Error('Scene or Camera not present in glTF');
         }
 
-        // this.render();
+        this.render();
 
         new ResizeSystem({ canvas: this.canvas, resize: this.resize.bind(this) }).start();
         new UpdateSystem({ update: this.update.bind(this), render: this.render.bind(this) }).start();
@@ -245,7 +163,7 @@ export class Game {
         }));
         light.addComponent(new Light({
             color: [255, 189, 89],
-            intensity: 5,
+            intensity: 3,
             attenuation: [0.001, 0, 0.3]
         }));
         // this.scene.addChild(light);
@@ -291,39 +209,18 @@ export class Game {
             if (blendObject.name.includes("CheckPoint")) {
                 const valueArray = blendObject.name.split("_");
                 blendObjectNode.checkPointIndex = parseInt(valueArray[0].split("")[valueArray[0].length - 1]);
-
+                /*
                 const yaw = valueArray[1].split("")[valueArray[1].length - 1] * Math.PI;
-                const pitch = valueArray[2].split("")[valueArray[2].length - 1] * Math.PI;
-                //const yaw = Math.PI;
-                //const pitch = 0;
+                const pitch = valueArray[2].split("")[valueArray[2].length - 1] * Math.PI;*/
+                const yaw = Math.PI;
+                const pitch = 0;
 
                 this.checkPointMap.set(blendObjectNode.checkPointIndex, new RespawnPoint(blendObject, yaw, pitch))
             }
 
-            // assign  traps
-            if (blendObject.name.includes("Trap")) blendObjectNode.isTrap = true;
-
-            // assign  teleports
-            if (blendObject.name.includes("Teleport")) {
-                blendObjectNode.isTeleport = true;
-                blendObjectNode.teleportToCheckpointIndex = blendObject.name.split("")[blendObject.name.length - 1];
-            }
-
-            // assign orbHolders
-            if (blendObject.name.includes("OrbHolder")) {
-                const orbHolderNum = blendObject.name.split("")[blendObject.name.length - 1];
-                const orbHolder = new OrbHolder(blendObjectNode.getComponentOfType(Transform));
-                orbHolder.orbDropEnabled = blendObject.name.includes("Drop");
-                blendObjectNode.addComponent(orbHolder);
-                this.orbHolderMap.set(orbHolderNum, blendObjectNode)
-            }
-
-            // assign orbs
-            if (blendObject.name.includes("Orb_")) {
-                const orbNum = blendObject.name.split("")[blendObject.name.length - 1];
-                const orb = new Orb(blendObjectNode.getComponentOfType(Transform), orbNum);
-                blendObjectNode.addComponent(orb);
-                this.orbArray.push(blendObjectNode);
+            // assign traps
+            if (blendObject.name.includes("Trap")) {
+                blendObjectNode.isTrap = true;
             }
 
             // assign moving objects
@@ -352,7 +249,7 @@ export class Game {
                     movingObjectTranslation = [0, 0, -0.002];
                 }
                 else if (blendObject.name.includes("CHASETRAP")) {
-                    maxTranslationDistance = 30;
+                    maxTranslationDistance = 20.63;
                     movingObjectTranslation = [0, 0, -0.008];
                 }
 
@@ -361,19 +258,13 @@ export class Game {
                     this.OnRespawnMovingObjectNodes.push(blendObjectNode);
                 }
 
-                if (blendObject.name.includes("Platform")) blendObjectNode.isEntityPlatform = true;
+                // assign platforms
+                if (blendObject.name.includes("Platform")) {
+                    blendObjectNode.isEntityPlatform = true;
+                }
 
-                blendObjectNode.addComponent(new Entity(blendObjectNode.getComponentOfType(Transform), movingObjectTranslation, maxTranslationDistance, moveBothDirections, movingSinceCheckPoint));
-            }
-
-            // assign unlockable doors
-            if (blendObject.name.includes("UnlockDoor")) {
-                blendObjectNode.dropOrbHolderUnlockIndex = blendObject.name.split("")[blendObject.name.length - 1];
-
-                // this object will not move in update therefore disable moving
-                blendObjectNode.getComponentOfType(Entity).movingEnabled = false;
-                blendObjectNode.getComponentOfType(Entity).reasignMaxDistance(2.8);
-                this.unlockableDoorArray.push(blendObjectNode);
+                blendObjectNode.addComponent(new Entity(
+                    blendObjectNode.getComponentOfType(Transform), movingObjectTranslation, maxTranslationDistance, moveBothDirections, movingSinceCheckPoint));
             }
         }
     }
@@ -385,17 +276,15 @@ export class Game {
                 component.update?.(time, dt);
             }
         });
-        this.physics.update(time, dt);  // TODO uncomment for collisions
+        this.physics.update(time, dt);
     }
 
     render() {
         this.renderer.render(this.scene, this.camera, this.skybox, this.lights);
-        this.updateFPS();
     }
 
     resize({ displaySize: { width, height } }) {
         this.camera.getComponentOfType(Camera).aspect = width / height;
-        this.renderer.resize(width, height);
     }
 
     async initialize() {
@@ -444,18 +333,5 @@ export class Game {
                 }),
             ],
         }));
-    }
-
-    updateFPS() {
-        this.frameCount++;
-        const now = window.performance.now();
-        const deltaTime = now - this.lastTime;
-
-        if (deltaTime >= 1000) { // Update every second
-            this.fps = this.frameCount / (deltaTime / 1000);
-            this.frameCount = 0;
-            this.lastTime = now;
-            console.log(`FPS: ${this.fps.toFixed(2)}`);
-        }
     }
 }
