@@ -1,6 +1,6 @@
 import { vec3 } from '../../../lib/gl-matrix-module.js';
 export class Entity {        
-    constructor(transform, translation, maxDistance, moveBothDirections, movingSinceCheckPoint) {
+    constructor(transform, translation, maxDistance, moveBothDirections, velocity, movingSinceCheckPoint) {
         this.transform = transform;
         this.startPos = this.transform.translation.slice();
         this.translation = translation;
@@ -13,6 +13,11 @@ export class Entity {
         this.maxY = this.startPos[1] + maxDistance;
         this.minZ = this.startPos[2] - maxDistance;
         this.maxZ = this.startPos[2] + maxDistance;
+
+        this.velocity = velocity;
+
+        this.moveUnlocked = false;
+        this.moveUnlockedEnded = false;
     }
 
     reasignMaxDistance(maxDistance) {
@@ -28,7 +33,7 @@ export class Entity {
         if (this.movingEnabled) this.move();
     }
 
-    move(){
+    move() {
         // update translation direction
         let posX = this.transform.translation[0];
         let posY = this.transform.translation[1];
@@ -39,40 +44,31 @@ export class Entity {
             this.updateTranslation(0);
         }
 
-        if(posY >= this.maxY || posY <= this.minY ){
+        if (posY >= this.maxY || posY <= this.minY) {
             this.updateTranslation(1);
         }
 
-        if(posZ >= this.maxZ || posZ <= this.minZ ){
+        if (posZ >= this.maxZ || posZ <= this.minZ) {
             this.updateTranslation(2);
         }
         // move
-        vec3.add(this.transform.translation, this.transform.translation, this.translation);
-    }
-
-    moveUnlocked() {
-        let cont = true;
-        while (cont) {
-            // update translation direction
-            let posX = this.transform.translation[0];
-            let posY = this.transform.translation[1];
-            let posZ = this.transform.translation[2];
-
-
-            if (posX >= this.maxX || posX <= this.minX || posY >= this.maxY || posY <= this.minY || posZ >= this.maxZ || posZ <= this.minZ) {
-                cont = false;
-            }
-
-            // move
-            vec3.add(this.transform.translation, this.transform.translation, this.translation);
-        }
+        vec3.scaleAndAdd(this.transform.translation, this.transform.translation, this.translation, this.velocity);
     }
 
     updateTranslation(axisIndex) {
-        if (this.moveBothDirections) {
-            this.translation[axisIndex] = -this.translation[axisIndex];             
+        // moveUnlocked -> "fake animation" finished, therefore disable movement
+        if (this.moveUnlocked) {
+            this.movingEnabled = false;
             return;
         }
+
+        // can move in both directions, therefore reverse direction
+        if (this.moveBothDirections) {
+            this.translation[axisIndex] = -this.translation[axisIndex];
+            return;
+        }
+
+        // can move in only 1 direction, therefore reset position
         this.resetPos();
     }
 

@@ -48,6 +48,7 @@ export class Game {
         this.orbHolderMap = new Map();
         this.orbArray = [];
         this.unlockableDoorArray = [];
+        this.playerModelObjects = [];
 
         this.frameCount = 0;
         this.lastTime = window.performance.now();
@@ -132,39 +133,44 @@ export class Game {
         });
 
 
-        // let count = 0;
-        // // TODO somethings wrong with textures in blender or why does this give glow to more objects??
-        // //  same texture is used for multiple models and not seperated. Also check the names, in case some models have exactly the same names
-        // for (let i = 0; i < loader.gltf.nodes.length; i++) {
-        //     const blendObject = loader.gltf.nodes[i];
-        //     // console.log(blendObject.name);
-        //     if (this.scene.children[i] !== undefined) {  // TODO and what object is undefined??
-        //         const blendObjectModel = this.scene.children[i].getComponentOfType(Model);
-        //
-        //         if (blendObject.name.includes("LavaTrap")) {
-        //             if (count === 0 || count > 1) {
-        //                 count++;
-        //                 console.log(count);
-        //                 continue;
-        //             }
-        //             console.log(blendObject.name);
-        //             console.log("LENGTH:", blendObjectModel.primitives.length);
-        //             console.log(blendObjectModel.primitives);
-        //             blendObjectModel.primitives[0].material.emissionTexture = emissionTextureOrange;
-        //             count++;
-        //         }
-        //
-        //         if (blendObject.name.includes("CheckPoint")) {
-        //             console.log(blendObject.name);
-        //             blendObjectModel.primitives[0].material.emissionTexture = emissionTextureCheckPoint;
-        //         }
-        //
-        //         if (blendObject.name.includes("Orb_")) {
-        //             console.log(blendObject.name);
-        //             blendObjectModel.primitives[0].material.emissionTexture = emissionTextureBlue;
-        //         }
-        //     }
-        // }
+         // TODO somethings wrong with textures in blender or why does this give glow to more objects??
+         //  same texture is used for multiple models and not seperated. Also check the names, in case some models have exactly the same names
+
+         /*
+        for (let i = 0; i < loader.gltf.materials.length; i++) {
+            const materialName = loader.gltf.materials[i].name;
+
+            if (materialName == ("LavaMat")) {
+                loader.gltf.materials[i].emissionTexture = emissionTextureOrange;
+            }
+        }*/
+
+        const lavaMat = loader.loadMaterial("LavaMat");
+        const portalMat = loader.loadMaterial("PortalMat");
+         for (let i = 0; i < loader.gltf.nodes.length; i++) {
+             if (this.scene.children[i] !== undefined) {
+                 const material = this.scene.children[i].getComponentOfType(Model).primitives[0].material;
+
+                 if (material == lavaMat) {
+                     material.emissionTexture = emissionTextureOrange;
+                 }
+
+                 else if (material == portalMat) {
+                     material.emissionTexture = emissionTextureBlue;
+                 }
+                 /*
+                 if (blendObject.name.includes("CheckPoint")) {
+                     console.log(blendObject.name);
+                     blendObjectModel.primitives[0].material.emissionTexture = emissionTextureCheckPoint;
+                 }
+        
+                 if (blendObject.name.includes("Orb_")) {
+                     console.log(blendObject.name);
+                     blendObjectModel.primitives[0].material.emissionTexture = emissionTextureBlue;
+                 }*/
+                 
+             }
+         }
 
 
         // assign checkPoints into array based on their porper index order
@@ -192,6 +198,10 @@ export class Game {
 
         this.player.getComponentOfType(Player).orbHolderArray = orbHolderArray;
 
+        for (const node of this.playerModelObjects) {
+            this.player.addChild(node);
+            node.isStatic = false;
+        }
 
 
         if (!this.scene || !this.camera) {
@@ -265,7 +275,10 @@ export class Game {
     }
 
     initPlayer(loader) {
-        this.player = loader.loadNode('Player');
+
+        this.player = loader.loadNode('PlayerCollisionBody');
+
+        //this.player = loader.loadNode('Player');
         const playerTransform = this.player.getComponentOfType(Transform);
         this.player.addComponent(new Player(playerTransform, this.camera, this.player, this.OnRespawnMovingObjectNodes, this.canvas));
         this.player.isDynamic = true;
@@ -287,26 +300,36 @@ export class Game {
             const blendObject = loader.gltf.nodes[i];
             const blendObjectNode = this.scene.children[i]
 
+            // assign playerModelObjects
+            if (blendObject.name.includes("PlayerObject")) {
+                this.playerModelObjects.push(blendObjectNode);
+            }
+
             // assign checkPoints
             if (blendObject.name.includes("CheckPoint")) {
                 const valueArray = blendObject.name.split("_");
                 blendObjectNode.checkPointIndex = parseInt(valueArray[0].split("")[valueArray[0].length - 1]);
 
                 const yaw = valueArray[1].split("")[valueArray[1].length - 1] * Math.PI;
-                const pitch = valueArray[2].split("")[valueArray[2].length - 1] * Math.PI;
                 //const yaw = Math.PI;
                 //const pitch = 0;
 
-                this.checkPointMap.set(blendObjectNode.checkPointIndex, new RespawnPoint(blendObject, yaw, pitch))
+                this.checkPointMap.set(blendObjectNode.checkPointIndex, new RespawnPoint(blendObject, yaw))
+                continue;
             }
 
-            // assign  traps
-            if (blendObject.name.includes("Trap")) blendObjectNode.isTrap = true;
+            // assign stairs
+            if (blendObject.name.includes("Stairs")) {
+                blendObjectNode.isStairs = true;
+                continue;
+            }
 
-            // assign  teleports
+
+            // assign teleports
             if (blendObject.name.includes("Teleport")) {
                 blendObjectNode.isTeleport = true;
                 blendObjectNode.teleportToCheckpointIndex = blendObject.name.split("")[blendObject.name.length - 1];
+                continue;
             }
 
             // assign orbHolders
@@ -316,6 +339,7 @@ export class Game {
                 orbHolder.orbDropEnabled = blendObject.name.includes("Drop");
                 blendObjectNode.addComponent(orbHolder);
                 this.orbHolderMap.set(orbHolderNum, blendObjectNode)
+                continue;
             }
 
             // assign orbs
@@ -324,7 +348,11 @@ export class Game {
                 const orb = new Orb(blendObjectNode.getComponentOfType(Transform), orbNum);
                 blendObjectNode.addComponent(orb);
                 this.orbArray.push(blendObjectNode);
+                continue;
             }
+
+            // assign traps
+            if (blendObject.name.includes("Trap")) blendObjectNode.isTrap = true;
 
             // assign moving objects
             if (blendObject.name.includes("Moving")) {
@@ -332,28 +360,36 @@ export class Game {
                 let movingObjectTranslation = [0, 0, 0];
                 let moveBothDirections = !blendObject.name.includes("OneDir");
                 let movingSinceCheckPoint = 0;
+                let velocity = 1;
 
                 if (blendObject.name.includes("UP")) {
-                    movingObjectTranslation = [0, 0.005, 0];
+                    movingObjectTranslation = [0, 1, 0];
+                    velocity = 0.005;
                 }
                 else if (blendObject.name.includes("DOWN")) {
-                    movingObjectTranslation = [0, -0.005, 0];
+                    movingObjectTranslation = [0, -1, 0];
+                    velocity = 0.005;
                 }
                 else if (blendObject.name.includes("LEFT")) {
-                    movingObjectTranslation = [-0.002, 0, 0];
+                    movingObjectTranslation = [-1, 0, 0];
+                    velocity = 0.002;
                 }
                 else if (blendObject.name.includes("RIGHT")) {
-                    movingObjectTranslation = [0.002, 0, 0];
+                    movingObjectTranslation = [1, 0, 0];
+                    velocity = 0.002;
                 }
                 else if (blendObject.name.includes("FORWARD")) {
-                    movingObjectTranslation = [0, 0, 0.002];
+                    movingObjectTranslation = [0, 0, 1];
+                    velocity = 0.002;
                 }
                 else if (blendObject.name.includes("BACKWARDS")) {
-                    movingObjectTranslation = [0, 0, -0.002];
+                    movingObjectTranslation = [0, 0, -1];
+                    velocity = 0.002;
                 }
                 else if (blendObject.name.includes("CHASETRAP")) {
                     maxTranslationDistance = 30;
-                    movingObjectTranslation = [0, 0, -0.008];
+                    movingObjectTranslation = [0, 0, -1];
+                    velocity = 0.01;
                 }
 
                 if (blendObject.name.includes("MovingOnSpawn")) {
@@ -363,19 +399,21 @@ export class Game {
 
                 if (blendObject.name.includes("Platform")) blendObjectNode.isEntityPlatform = true;
 
-                blendObjectNode.addComponent(new Entity(blendObjectNode.getComponentOfType(Transform), movingObjectTranslation, maxTranslationDistance, moveBothDirections, movingSinceCheckPoint));
+                blendObjectNode.addComponent(new Entity(blendObjectNode.getComponentOfType(Transform), movingObjectTranslation, maxTranslationDistance, moveBothDirections, velocity, movingSinceCheckPoint));
             }
 
             // assign unlockable doors
             if (blendObject.name.includes("UnlockDoor")) {
                 blendObjectNode.dropOrbHolderUnlockIndex = blendObject.name.split("")[blendObject.name.length - 1];
 
-                // this object will not move in update therefore disable moving
-                blendObjectNode.getComponentOfType(Entity).movingEnabled = false;
-                blendObjectNode.getComponentOfType(Entity).reasignMaxDistance(2.8);
+                // this object will not move until unlocked, therefore disable movement
+                const entity = blendObjectNode.getComponentOfType(Entity);
+                entity.movingEnabled = false;
+                entity.velocity = 0.01;
+                entity.reasignMaxDistance(2.8);
                 this.unlockableDoorArray.push(blendObjectNode);
             }
-        }
+        }     
     }
 
     update(time, dt) {
