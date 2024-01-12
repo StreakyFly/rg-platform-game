@@ -1,5 +1,5 @@
 import { Orb } from './Orb.js';
-import { showBottomText } from "../../../main.js";
+import { showBottomText, addInventory, removeInventory } from "../../../main.js";
 export class OrbHolder {
     orb = null;
     unlockDoor = null;
@@ -27,7 +27,7 @@ export class OrbHolder {
         const deltaZ = playerTranslation[2] - this.transform.translation[2];
         const distance = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaZ, 2));
         if (distance > this.detectionRadius) return false;
-    
+
         return true;
     }
 
@@ -51,6 +51,10 @@ export class OrbHolder {
         this.orb.getComponentOfType(Orb).transform.translation = [0, 0, 40]
 
         collectedOrbArray.push(this.orb);
+        const inventoryCount = document.querySelector('.inventory-slot.iCount');
+        if (inventoryCount) {
+            inventoryCount.textContent = parseInt(inventoryCount.textContent[0]) + 1 + "x";
+        }
 
         showBottomText("Energy Orb collected.", 'yellow');
     }
@@ -61,12 +65,16 @@ export class OrbHolder {
             return;
         }
 
-        for (const orbNode of collectedOrbArray)
-        {
+        const inventoryCount = document.querySelector('.inventory-slot.iCount');
+        if (inventoryCount) {
+            inventoryCount.textContent = parseInt(inventoryCount.textContent[0]) - 1 + "x";
+        }
+
+        for (const orbNode of collectedOrbArray) {
             orbNode.getComponentOfType(Orb).transform.translation = this.transform.translation.slice();
             orbNode.getComponentOfType(Orb).transform.translation[1] += 0.5;
-        }     
-        showBottomText(collectedOrbArray.length + " Energy Orb" + ((collectedOrbArray.length > 1) ? "s were" : " was" ) + " placed.", 'yellow');
+        }
+        showBottomText(collectedOrbArray.length + " Energy Orb" + ((collectedOrbArray.length > 1) ? "s were" : " was") + " placed.", 'yellow');
 
         // clear array
         collectedOrbArray.length = 0;

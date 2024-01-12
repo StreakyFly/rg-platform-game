@@ -67,6 +67,7 @@ function startGame() {
             bodyElement.classList.add('bottomText');
             console.log("Game initialized!");
             updateLoadingScreen(100);
+            document.getElementById('stats').style.display = 'block';
             setTimeout(() => {
                 hideLoadingScreen();
             }, 300);
@@ -102,11 +103,11 @@ function updateLoadingScreen(percentage, error = false) {
 
 
 export function showTopText(message,
-                            text_color = 'white',
-                            background_color = 'black',
-                            duration = 3, // 1.25
-                            font_size = 32,  // 25
-                            is_bold = false,
+    text_color = 'white',
+    background_color = 'black',
+    duration = 3, // 1.25
+    font_size = 32,  // 25
+    is_bold = false,
 ) {
     const topTextElement = document.getElementById('topText');
     const fontWeight = is_bold ? 'bold' : 'normal';
@@ -133,11 +134,11 @@ export function showTopText(message,
 
 
 export function showBottomText(message,
-                               text_color = 'white',
-                               background_color = 'black',
-                               duration = 3,  // 1.5
-                               font_size = 32,
-                               is_bold = false,
+    text_color = 'white',
+    background_color = 'black',
+    duration = 3,  // 1.5
+    font_size = 32,
+    is_bold = false,
 ) {
     const textElement = document.getElementById('bottomText');
     const fontWeight = is_bold ? 'bold' : 'normal';
@@ -185,10 +186,10 @@ function displayLeaderboard() {
 // dodamo igralca na localstorage
 export function savePlayerData(player, date, time, deaths) {
     if (playerData === null) {
-        localStorage.setItem('leaderboardInfo', JSON.stringify([{ name: player, date: date, time: time, deaths: deaths}]));
+        localStorage.setItem('leaderboardInfo', JSON.stringify([{ name: player, date: date, time: time, deaths: deaths }]));
         return;
     }
-    playerData.push({ name: player, date: date, time: time, deaths: deaths});
+    playerData.push({ name: player, date: date, time: time, deaths: deaths });
     playerData.sort((a, b) => {
         return timeToSeconds(a.time) - timeToSeconds(b.time);
     })
@@ -267,3 +268,60 @@ function updateSensitivityValue(value) {
 playerSensitivity.addEventListener('change', function () {
     updateSensitivityValue(this.value);
 })
+
+
+// CLOCK
+
+const clock = document.getElementById('time');
+export let timeRunning = false;
+export let gameFinish = false;
+export function startClock() {
+    if (timeRunning || gameFinish) return;
+    timeRunning = true;
+    let seconds = 0;
+    let minutes = 0;
+    let time = '00:00';
+    clock.textContent = time;
+    setInterval(function () {
+        if (timeRunning && !pause) {
+            seconds++;
+            if (seconds === 60) {
+                seconds = 0;
+                minutes++;
+            }
+            if (minutes === 60) {
+                minutes = 0;
+            }
+            time = (minutes < 10 ? '0' + minutes : minutes) + ':' + (seconds < 10 ? '0' + seconds : seconds);
+            clock.textContent = time;
+        }
+    }, 1000);
+}
+
+export function finishedGame() {
+    if (gameFinish) return;
+    gameFinish = true
+    timeRunning = false;
+    const time = clock.textContent;
+    const date = new Date().toLocaleDateString();
+    const hearts = document.querySelectorAll('.hearts');
+    const deaths = 3 - hearts.length;
+    const playerName = "testing"
+    showBottomText('You finished the game in ' + time + '! Deaths: ' + deaths, 'white', 'black', 5, 32, true);
+
+    savePlayerData(playerName, date, time, deaths);
+}
+
+export function addInventory() {
+    const inventoryCount = document.querySelector('.inventory-slot.iCount');
+    if (inventoryCount) {
+        inventoryCount.textContent = parseInt(inventoryCount.textContent[0]) + 1 + "x";
+    }
+}
+
+export function removeInventory() {
+    const inventoryCount = document.querySelector('.inventory-slot.iCount');
+    if (inventoryCount) {
+        inventoryCount.textContent = parseInt(inventoryCount.textContent[0]) - 1 + "x";
+    }
+}

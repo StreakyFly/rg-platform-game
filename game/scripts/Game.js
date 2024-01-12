@@ -66,7 +66,7 @@ export class Game {
         this.initPlayerLight();
         await this.initSky();
 
-        this.createLights(15);
+        this.createLights(5);
 
 
         const black = new ImageData(new Uint8ClampedArray([0, 0, 0, 255]), 1, 1);

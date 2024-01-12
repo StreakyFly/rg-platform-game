@@ -5,8 +5,8 @@ import { Transform } from '../../common/engine/core/Transform.js';
 import { Physics } from "./Physics.js";
 import { Entity } from './entities/Entity.js';
 
-import { showBottomText, showTopText } from "../../main.js";
-
+import { showBottomText, showTopText, startClock } from "../../main.js";
+import { gameFinish } from "../../main.js";
 
 const cameraView = {
     "3D": "3d",
@@ -63,6 +63,8 @@ export class Player {
         this.killYMin = -5;
         this.killYMax = 21;
         this.currKillYIndex = 0;
+
+        this.lives = 3;
 
         this.initHandlers();
     }
@@ -141,12 +143,15 @@ export class Player {
         // map user input to the acceleration vector.
         const acc = vec3.create();
         if (this.keys['KeyW'] || this.keys['KeyUp']) {
+            if (!gameFinish) startClock();
             if (this.view === cameraView['3D']) vec3.add(acc, acc, forward);
         }
         if (this.keys['KeyS']) {
+            if (!gameFinish) startClock();
             if (this.view === cameraView['3D']) vec3.sub(acc, acc, forward);
         }
         if (this.keys['KeyD']) {
+            if (!gameFinish) startClock();
             if (this.view === cameraView['3D']) {
                 vec3.add(acc, acc, right);
             } else {
@@ -154,6 +159,7 @@ export class Player {
             }
         }
         if (this.keys['KeyA']) {
+            if (!gameFinish) startClock();
             if (this.view === cameraView['3D']) {
                 vec3.sub(acc, acc, right);
             } else {
@@ -161,6 +167,7 @@ export class Player {
             }
         }
         if (this.keys['Space']) {
+            if (!gameFinish) startClock();
             if (!this.attemptJump && !this.attemptDoubleJump && !this.isJumping) {
                 this.attemptJump = true;
             } else if (!this.attemptDoubleJump && !this.isDoubleJumping) {
@@ -256,6 +263,19 @@ export class Player {
         else {
             this.changeTo3D();
         }
+
+        // remove lives
+        this.lives--;
+        if (this.lives == 0) {
+            showBottomText("Game over!"); //TODO nared da je konc
+        }
+
+        const hearts = document.querySelectorAll('.hearts');
+        if (hearts.length > 0) {
+            // Removing hearts in html
+            const lastHeart = hearts[hearts.length - 1];
+            lastHeart.parentNode.removeChild(lastHeart);
+        }
     }
 
     checkForNewCheckpoint(object) {
@@ -315,7 +335,7 @@ export class Player {
             if (object.aabb === undefined || object === this.node) continue;
 
             if (this.checkCollision(player, object)) {
-                if (object.isTrap){
+                if (object.isTrap) {
                     this.respawn();
                     return true;
                 }
