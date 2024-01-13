@@ -107,7 +107,7 @@ function updateLoadingScreen(percentage, error = false) {
     document.getElementById('loadingText').innerText = 'Loading... ' + percentage + '%';
 }
 
-window.isShowingText = false;
+let isShowingText = false;
 
 export function showText(
     position='top',
@@ -119,14 +119,14 @@ export function showText(
     is_bold = false) {
     const textElement = document.getElementById(position === 'top' ? 'topText' : 'bottomText');
 
-    if (window.isShowingText) {
+    if (isShowingText) {
         setTimeout(function () {
             showText(position, message, text_color, background_color, duration, font_size, is_bold);
         }, (duration + 0.5) * 1000);
         return;
     }
 
-    window.isShowingText = true;
+    isShowingText = true;
 
     const fontWeight = is_bold ? 'bold' : 'normal';
     textElement.innerHTML = `<p style="font-size: ${font_size}px; font-weight: ${fontWeight};">${message}</p>`;
