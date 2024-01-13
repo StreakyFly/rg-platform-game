@@ -135,12 +135,16 @@ export class Player {
             this.isMoving = true;
             if (this.view === cameraView['3D']) {
                 vec3.add(acc, acc, right);
+            } else {
+                vec3.add(acc, acc, forward);
             }
         }
         if (this.keys['KeyA']) {
             this.isMoving = true;
             if (this.view === cameraView['3D']) {
                 vec3.sub(acc, acc, right);
+            } else {
+                vec3.sub(acc, acc, forward);
             }
         }
         if (this.keys['Space']) {
