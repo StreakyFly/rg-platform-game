@@ -5,7 +5,7 @@ import { Transform } from '../../common/engine/core/Transform.js';
 import { Physics } from "./Physics.js";
 import { Entity } from './entities/Entity.js';
 
-import { interactionText, showText } from "../../main.js";
+import { interactionText, showBottomText, showTopText } from "../../main.js";
 import { gameFinish, startClock } from "./Stats.js";
 
 
@@ -225,7 +225,7 @@ export class Player {
     }
 
     showDeathScreen() {
-        showText("top", "You died...", 'red', 'black', 2);
+        showTopText("You died...", 'red', 'black', 2);
     }
 
     respawn() {
@@ -258,7 +258,7 @@ export class Player {
         if (object.checkPointIndex > this.currCheckPointIndex) {
             // new checkpoint reached
             this.currCheckPointIndex = object.checkPointIndex;
-            showText("bottom", "Checkpoint reached!");
+            showBottomText("Checkpoint reached!");
         }
     }
 
@@ -297,9 +297,11 @@ export class Player {
         for (const orbHolder of this.orbHolderArray) {
             this.validOrbHolderInteraction = orbHolder.isInteractionRangeValid(this.playerTransform.translation, lookDirection);
             if (this.validOrbHolderInteraction) {
-                interactionText();
+                interactionText(true);
                 this.validOrbHolder = orbHolder;
                 return;
+            } else {
+                interactionText(false)
             }
         }
     }

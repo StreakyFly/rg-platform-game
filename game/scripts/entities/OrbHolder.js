@@ -1,5 +1,7 @@
 import { Orb } from './Orb.js';
-import { showText } from "../../../main.js";
+import { showBottomText } from "../../../main.js";
+
+
 export class OrbHolder {
     orb = null;
     unlockDoor = null;
@@ -84,12 +86,12 @@ export class OrbHolder {
         this.interactionDisabled = true;
 
         this.updateInventory(collectedOrbArray);
-        showText("bottom", "Energy Orb collected.", 'orange');
+        showBottomText("Energy Orb collected.", 'orange');
     }
 
     dropAllOrbs(collectedOrbArray) {
         if (collectedOrbArray.length === 0) {
-            showText("bottom", "0 Energy Orbs in inventory.", 'red');
+            showBottomText("0 Energy Orbs in inventory.", 'red');
             return;
         }
 
@@ -101,7 +103,7 @@ export class OrbHolder {
             orbNode.getComponentOfType(Orb).transform.translation[1] += 0.5;
         }
 
-        showText("bottom", collectedOrbArray.length + " Energy Orb" + ((collectedOrbArray.length > 1) ? "s were" : " was") + " placed.", 'orange');
+        showBottomText(collectedOrbArray.length + " Energy Orb" + ((collectedOrbArray.length > 1) ? "s were" : " was") + " placed.", 'orange');
 
         // clear array
         collectedOrbArray.length = 0;

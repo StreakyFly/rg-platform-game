@@ -1,4 +1,4 @@
-import { showText } from "../../main.js";
+import { showTopText } from "../../main.js";
 
 const mouseSensitivity = document.getElementById('mouseSensitivity');
 const volume = document.getElementById('volume');
@@ -24,7 +24,7 @@ export function toggleSettings() {
 }
 
 export function saveSettings() {
-    showText("top", "Settings saved", 'white', 'black', 1.5);
+    showTopText("Settings saved", 'white', 'black', 1.5);
 
     localStorage.setItem('mouseSensitivity', String(mouseSensitivity.value));
     localStorage.setItem('volume', String(volume.value));
