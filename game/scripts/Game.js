@@ -409,7 +409,7 @@ export class Game {
                 component.update?.(time, dt);
             }
         });
-        this.physics.update(time, dt);  // TODO uncomment for collisions
+        this.physics.update(time, dt);  // handle collisions
     }
 
     render() {

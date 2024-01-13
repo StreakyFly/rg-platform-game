@@ -14,10 +14,9 @@ document.getElementById('settingsBackButton').addEventListener('click', toggleSe
 document.getElementById('pauseButton').addEventListener('click', togglePause);
 // document.getElementById('mainMenuButton').addEventListener('click', showMainMenu);
 
-// randomly rotate buttons when hovered
+// rotate buttons slightly when hovered
 document.querySelectorAll('button').forEach(button => {
     button.addEventListener('mouseenter', () => {
-        console.log("IN");
         const randomDegree = Math.floor(Math.random() * 3) + 4;
         const negativeMultiplier = Math.random() < 0.5 ? -1 : 1;
         button.style.setProperty('--random-rotation', (randomDegree * negativeMultiplier) + 'deg');
@@ -28,11 +27,13 @@ document.querySelectorAll('button').forEach(button => {
 export let pause = false;
 let isMainMenuActive = true;
 
-// TODO fix this, if you click too early it shows an error
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
-        document.querySelector('.fadein').classList.remove('fadein');
-    }, 1500);
+        const fadeinElement = document.querySelector('.fadein');
+        if (fadeinElement) {
+            fadeinElement.classList.remove('fadein');
+        }
+    }, 1000);
 });
 
 
@@ -85,8 +86,6 @@ function startGame() {
             updateLoadingScreen(100, true);
         });
 }
-
-// startGame(); // TODO delete
 
 
 function showLoadingScreen() {

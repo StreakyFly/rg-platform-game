@@ -163,11 +163,6 @@ export class Player {
             return;
         }
 
-        if (this.keys['KeyG']) {
-            this.changeToDownside3D();
-            return;
-        }
-
         if (this.keys['KeyF'] && this.validOrbHolderInteraction && this.validOrbHolder) {
             this.validOrbHolder.playerOrbInteraction(this.collectedOrbArray);
         }
@@ -214,8 +209,6 @@ export class Player {
 
         const isOnObject = this.isOnObject();
 
-        this.handleJump(dt, isOnObject);
-
         if (this.isOnObject()) {
             vec3.scaleAndAdd(this.playerTransform.translation, this.playerTransform.translation, this.moveWithPlatformTranslation, dt);
         }
@@ -224,6 +217,8 @@ export class Player {
             this.showDeathScreen();
             this.respawn();
         }
+
+        this.handleJump(dt, isOnObject);
 
         this.handleOrbHolderDetection();
     }
@@ -266,6 +261,7 @@ export class Player {
     }
 
     handleJump(dt, onObject) {
+        dt = Math.min(dt, 0.15);
         if (onObject) {
             this.velocityY = 0;
             // if onObject and isJumping, then reset all jump parameters
@@ -365,7 +361,7 @@ export class Player {
         this.yaw -= dx * this.pointerSensitivity;
 
         const twopi = Math.PI * 2;
-        const verticalRotationView = Math.PI / 3;  // up down rotation limit
+        const verticalRotationView = Math.PI / 3.3;  // up down rotation threshold
 
         this.pitch = Math.min(Math.max(this.pitch, -verticalRotationView), verticalRotationView);
 
