@@ -106,22 +106,19 @@ function updateLoadingScreen(percentage, error = false) {
     document.getElementById('loadingText').innerText = 'Loading... ' + percentage + '%';
 }
 
-window.isShowingBottomText = false;
+window.isShowingText = false;
 
 export function showText(position, message, text_color = 'white', background_color = 'black', duration = 2, font_size = 32, is_bold = false) {
     const textElement = document.getElementById(position === 'top' ? 'topText' : 'bottomText');
 
-    if (position === 'bottom' && window.isShowingBottomText) {
-        // delay showing the new message if there's an ongoing bottom animation
+    if (window.isShowingText) {
         setTimeout(function () {
             showText(position, message, text_color, background_color, duration, font_size, is_bold);
         }, (duration + 0.5) * 1000);
         return;
     }
 
-    if (position === 'bottom') {
-        window.isShowingBottomText = true;
-    }
+    window.isShowingText = true;
 
     const fontWeight = is_bold ? 'bold' : 'normal';
     textElement.innerHTML = `<p style="font-size: ${font_size}px; font-weight: ${fontWeight};">${message}</p>`;
@@ -140,12 +137,11 @@ export function showText(position, message, text_color = 'white', background_col
         textElement.style.opacity = '0';
         setTimeout(function () {
             textElement.style.visibility = 'none';
-            if (position === 'bottom') {
-                window.isShowingBottomText = false;
-            }
+            window.isShowingText = false;
         }, 500);
     }, duration * 1000);
 }
+
 
 function toggleVisibility(elementId, show) {
     const element = document.getElementById(elementId);
