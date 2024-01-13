@@ -7,6 +7,8 @@
     --glow-effect2: #331c19;
     --glow-effect3: #452c2c;
     --glow-effect4: #7b5247;
+
+    --button-texture: url("../game/assets/images/button-texture.png") repeat scroll 0 0 transparent;
 }
 
 body,
@@ -46,8 +48,8 @@ html {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    background: url("../game/assets/images/button-texture.png") repeat scroll 0 0 transparent;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: var(--button-texture);
+    transition: transform 0.2s ease;
     width: 400px;
 }
 
@@ -100,18 +102,14 @@ button:hover {
 #pauseMenu button {
     width: 100%;
     padding: 10px;
-    margin-top: 10px;
-    font-size: 16px;
-    color: #fff;
-    background-color: #007bff;
+    margin-top: 30px;
+    font-size: 24px;
+    color: white;
+    background: var(--button-texture);
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-#pauseMenu button:hover {
-    background-color: #0056b3;
+    transition: transform 0.2s ease;
 }
 
 #loadingScreen {
@@ -152,10 +150,6 @@ button:hover {
     to {
         opacity: 1;
     }
-}
-
-.fadein button {
-    animation: fadeIn 1s ease-in-out;
 }
 
 #leaderboard, #settings {
@@ -208,7 +202,7 @@ th:nth-of-type(4) { /* DEATHS column */
 }
 
 th {
-    background: url("../game/assets/images/button-texture.png") repeat scroll 0 0 transparent;
+    background: var(--button-texture);
     /*border-bottom: 2px solid #ccc;*/
 }
 
@@ -229,7 +223,7 @@ tr:hover {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    background: url("../game/assets/images/button-texture.png") repeat scroll 0 0 transparent;
+    background: var(--button-texture);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     position: absolute;
     top: 82%;
@@ -248,7 +242,7 @@ tr:hover {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    background: url("../game/assets/images/button-texture.png") repeat scroll 0 0 transparent;
+    background: var(--button-texture);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     margin-top: 17%;
     padding: 10px 20px;

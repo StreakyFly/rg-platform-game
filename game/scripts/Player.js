@@ -109,8 +109,6 @@ export class Player {
     }
 
     update(t, dt) {
-        if (!gameFinish) startClock();
-
         // calculate forward and right vectors.
         const cos = Math.cos(this.yaw);
         const sin = Math.sin(this.yaw);
@@ -122,14 +120,13 @@ export class Player {
         this.moveWithPlatformTranslation = [0, 0, 0];
 
         const acc = vec3.create();
-        if (this.keys['KeyW'] || this.keys['KeyUp']) {
+        if (this.keys['KeyW']) {
             this.isMoving = true;
             vec3.add(acc, acc, forward);
         }
         if (this.keys['KeyS']) {
             this.isMoving = true;
             vec3.sub(acc, acc, forward);
-
         }
         if (this.keys['KeyD']) {
             this.isMoving = true;

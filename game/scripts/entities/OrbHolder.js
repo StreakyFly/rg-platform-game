@@ -27,9 +27,7 @@ export class OrbHolder {
         const deltaX = playerTranslation[0] - this.transform.translation[0];
         const deltaZ = playerTranslation[2] - this.transform.translation[2];
         const distance = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaZ, 2));
-        if (distance > this.detectionRadius) return false;
-
-        return true;
+        return distance <= this.detectionRadius;
     }
 
     playerOrbInteraction(collectedOrbArray) {
@@ -52,7 +50,7 @@ export class OrbHolder {
         this.interactionDisabled = true;
 
         this.updateInventory(collectedOrbArray);
-        showBottomText("Energy Orb collected.", 'yellow');
+        showBottomText("Energy Orb collected.", 'orange');
     }
 
     dropAllOrbs(collectedOrbArray) {
@@ -69,7 +67,7 @@ export class OrbHolder {
             orbNode.getComponentOfType(Orb).transform.translation[1] += 0.5;
         }
 
-        showBottomText(collectedOrbArray.length + " Energy Orb" + ((collectedOrbArray.length > 1) ? "s were" : " was") + " placed.", 'yellow');
+        showBottomText(collectedOrbArray.length + " Energy Orb" + ((collectedOrbArray.length > 1) ? "s were" : " was") + " placed.", 'orange');
 
         // clear array
         collectedOrbArray.length = 0;

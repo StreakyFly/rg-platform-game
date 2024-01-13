@@ -419,14 +419,13 @@ export class Game {
 
     resize({ displaySize: { width, height } }) {
         this.camera.getComponentOfType(Camera).aspect = width / height;
-        this.renderer.resize(width, height);
+        if (this.renderer instanceof Renderer) {
+            this.renderer.resize(width, height);
+        }
     }
 
     async initialize() {
-        // document.querySelector('.main-menu').remove();
-        const mainMenu = document.querySelector('.main-menu');
-        const parent = mainMenu.parentNode;
-        parent.removeChild(mainMenu);
+        document.querySelector('.main-menu').remove();
 
         await this.start();
 

@@ -12,7 +12,8 @@ document.getElementById('leaderboardBackButton').addEventListener('click', toggl
 document.getElementById('saveSettingsButton').addEventListener('click', saveSettings);
 document.getElementById('settingsBackButton').addEventListener('click', toggleSettings);
 document.getElementById('pauseButton').addEventListener('click', togglePause);
-// document.getElementById('mainMenuButton').addEventListener('click', showMainMenu);
+document.getElementById('mainMenuButton').addEventListener('click', showMainMenu);
+
 
 // rotate buttons slightly when hovered
 document.querySelectorAll('button').forEach(button => {
@@ -26,16 +27,6 @@ document.querySelectorAll('button').forEach(button => {
 
 export let pause = false;
 let isMainMenuActive = true;
-
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        const fadeinElement = document.querySelector('.fadein');
-        if (fadeinElement) {
-            fadeinElement.classList.remove('fadein');
-        }
-    }, 1000);
-});
-
 
 document.addEventListener('keydown', function (event) {
     if (event.key === 'p' && !isMainMenuActive) {
@@ -62,14 +53,15 @@ function togglePause() {
 
 function startGame() {
     showLoadingScreen();
-    updateLoadingScreen(7);
     isMainMenuActive = false;
+    updateLoadingScreen(7);
 
     // remove main menu styles and add game styles
     bodyElement.classList.remove('main-menu');
     bodyElement.classList.add('game');
+
     updateLoadingScreen(19);
-    setTimeout(() => updateLoadingScreen(46), 300);
+    setTimeout(() => updateLoadingScreen(46), 500);
 
     const game = new Game(getRenderLight());
     game.initialize()
@@ -79,7 +71,10 @@ function startGame() {
             console.log("Game initialized!");
             setTimeout(() => updateLoadingScreen(100), 100);
             document.getElementById('stats').style.display = 'block';
-            setTimeout(() => hideLoadingScreen(), 300);
+            setTimeout(() => {
+                hideLoadingScreen();
+                startClock();
+            }, 300);
         })
         .catch(error => {
             console.error('Error during game initialization:', error);
@@ -114,7 +109,7 @@ export function showTopText(message,
                             duration = 2,
                             font_size = 32,  // 25
                             is_bold = false,
-) {
+                           ) {
     const topTextElement = document.getElementById('topText');
     const fontWeight = is_bold ? 'bold' : 'normal';
     topTextElement.innerHTML = `<p style="font-size: ${font_size}px; font-weight: ${fontWeight};">${message}</p>`;
@@ -139,14 +134,28 @@ export function showTopText(message,
 }
 
 
+let isShowingBottomText = false;
+
 export function showBottomText(message,
                                text_color = 'white',
                                background_color = 'black',
                                duration = 2,
                                font_size = 32,
                                is_bold = false,
-) {
+                              ) {
     const textElement = document.getElementById('bottomText');
+
+    // check if there is an ongoing animation
+    if (isShowingBottomText) {
+        // delay showing the new message until the current animation finishes
+        setTimeout(function () {
+            showBottomText(message, text_color, background_color, duration, font_size, is_bold);
+        }, (duration + 0.5) * 1000); // delay for the duration + 0.5 seconds
+        return;
+    }
+
+    isShowingBottomText = true;
+
     const fontWeight = is_bold ? 'bold' : 'normal';
     textElement.innerHTML = `<p style="font-size: ${font_size}px; font-weight: ${fontWeight};">${message}</p>`;
     textElement.style.opacity = '0';
@@ -154,9 +163,6 @@ export function showBottomText(message,
 
     textElement.style.color = text_color;
     textElement.style.backgroundColor = background_color;
-
-    // clear previous timer
-    clearTimeout(textElement.fadeOutTimer);
 
     // fade in
     setTimeout(function () {
@@ -168,10 +174,10 @@ export function showBottomText(message,
         textElement.style.opacity = '0';
         textElement.fadeOutTimer = setTimeout(function () {
             textElement.style.visibility = 'none';
+            isShowingBottomText = false; // animation is complete
         }, 500);
     }, duration * 1000);
 }
-
 
 
 
