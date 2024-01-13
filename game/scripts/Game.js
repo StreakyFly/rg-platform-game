@@ -18,6 +18,8 @@ import { ResizeSystem } from '../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../common/engine/systems/UpdateSystem.js';
 import { calculateAxisAlignedBoundingBox, mergeAxisAlignedBoundingBoxes } from '../../common/engine/core/MeshUtils.js';
 
+
+import { UnlitRenderer } from './UnlitRenderer.js';
 import { Renderer } from './Renderer.js';
 
 import { Physics } from './Physics.js';
@@ -33,10 +35,10 @@ import { Light } from './Light.js';
 
 
 export class Game {
-    constructor() {
+    constructor(improvedRenderer = true) {
         this.canvas = document.querySelector('canvas');
         this.gl = this.canvas.getContext('webgl2');
-        this.renderer = new Renderer(this.gl);
+        this.renderer = improvedRenderer ? new Renderer(this.gl) : new UnlitRenderer(this.gl);
         this.scene = null;
         this.camera = null;
         this.physics = null;
@@ -67,7 +69,7 @@ export class Game {
         this.initPlayerLight();
         await this.initSky();
 
-        this.createLights(5);
+        this.createLights(15);
 
 
         const black = new ImageData(new Uint8ClampedArray([0, 0, 0, 255]), 1, 1);
@@ -133,45 +135,32 @@ export class Game {
         });
 
 
-         // TODO somethings wrong with textures in blender or why does this give glow to more objects??
-         //  same texture is used for multiple models and not seperated. Also check the names, in case some models have exactly the same names
-
-         /*
-        for (let i = 0; i < loader.gltf.materials.length; i++) {
-            const materialName = loader.gltf.materials[i].name;
-
-            if (materialName == ("LavaMat")) {
-                loader.gltf.materials[i].emissionTexture = emissionTextureOrange;
-            }
-        }*/
-
         const lavaMat = loader.loadMaterial("LavaMat");
         const portalMat = loader.loadMaterial("PortalMat");
-         for (let i = 0; i < loader.gltf.nodes.length; i++) {
-             if (this.scene.children[i] !== undefined) {
-                 const material = this.scene.children[i].getComponentOfType(Model).primitives[0].material;
+        for (let i = 0; i < loader.gltf.nodes.length; i++) {
+            if (this.scene.children[i] !== undefined) {
+                const material = this.scene.children[i].getComponentOfType(Model).primitives[0].material;
 
-                 if (material == lavaMat) {
-                     material.emissionTexture = emissionTextureOrange;
-                 }
+                if (material == lavaMat) {
+                    material.emissionTexture = emissionTextureOrange;
+                }
 
-                 else if (material == portalMat) {
-                     material.emissionTexture = emissionTextureBlue;
-                 }
-                 /*
-                 if (blendObject.name.includes("CheckPoint")) {
-                     console.log(blendObject.name);
-                     blendObjectModel.primitives[0].material.emissionTexture = emissionTextureCheckPoint;
-                 }
-        
-                 if (blendObject.name.includes("Orb_")) {
-                     console.log(blendObject.name);
-                     blendObjectModel.primitives[0].material.emissionTexture = emissionTextureBlue;
-                 }*/
-                 
-             }
-         }
+                else if (material == portalMat) {
+                    material.emissionTexture = emissionTextureBlue;
+                }
+                /*
+                if (blendObject.name.includes("CheckPoint")) {
+                    console.log(blendObject.name);
+                    blendObjectModel.primitives[0].material.emissionTexture = emissionTextureCheckPoint;
+                }
 
+                if (blendObject.name.includes("Orb_")) {
+                    console.log(blendObject.name);
+                    blendObjectModel.primitives[0].material.emissionTexture = emissionTextureBlue;
+                }*/
+
+            }
+        }
 
         // assign checkPoints into array based on their porper index order
         for (let i = 0; i < this.checkPointMap.size; i++) {
@@ -202,7 +191,6 @@ export class Game {
             this.player.addChild(node);
             node.isStatic = false;
         }
-
 
         if (!this.scene || !this.camera) {
             throw new Error('Scene or Camera not present in glTF');
@@ -275,10 +263,8 @@ export class Game {
     }
 
     initPlayer(loader) {
-
         this.player = loader.loadNode('PlayerCollisionBody');
-
-        //this.player = loader.loadNode('Player');
+        // this.player = loader.loadNode('Player');
         const playerTransform = this.player.getComponentOfType(Transform);
         this.player.addComponent(new Player(playerTransform, this.camera, this.player, this.OnRespawnMovingObjectNodes, this.canvas));
         this.player.isDynamic = true;
@@ -413,7 +399,7 @@ export class Game {
                 entity.reasignMaxDistance(2.8);
                 this.unlockableDoorArray.push(blendObjectNode);
             }
-        }     
+        }
     }
 
     update(time, dt) {

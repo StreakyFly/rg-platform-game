@@ -1,9 +1,12 @@
 :root {
+    --main-menu-color: #3f3f3f;
+    --secondary-menu-color: #313131;
     --main-menu-hover-bg: #a9a099;
-    --fire-effect-shadow1: rgba(0, 0, 0, 0.3);
-    --fire-effect-shadow2: #fa7035;
-    --fire-effect-shadow3: #ff913c;
-    --fire-effect-shadow4: #ffc140;
+
+    --glow-effect1: rgba(0, 0, 0, 0.3);
+    --glow-effect2: #331c19;
+    --glow-effect3: #452c2c;
+    --glow-effect4: #7b5247;
 }
 
 body,
@@ -47,38 +50,27 @@ html {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.main-menu button:hover,
-#leaderboard button:hover, #settings button:hover {
-    background-color: var(--main-menu-hover-bg);
-    transform: scale(1.05);
-    box-shadow: 0 5px 15px var(--fire-effect-shadow1),
-    0 0 10px var(--fire-effect-shadow2),
-    0 0 15px var(--fire-effect-shadow3),
-    0 0 20px var(--fire-effect-shadow4);
+button:hover {
+    transform: rotate(var(--random-rotation));
 }
 
 .fireAn button:hover {
     animation: fire-glow 1s infinite alternate;
 }
 
-/*.main-menu button p {*/
-/*    mix-blend-mode: difference;*/
-/*}*/
-
-/* fire effect */
 @keyframes fire-glow {
     0% {
-        box-shadow: 0 5px 5px var(--fire-effect-shadow1),
-        0 0 5px var(--fire-effect-shadow2),
-        0 0 10px var(--fire-effect-shadow3),
-        0 0 15px var(--fire-effect-shadow4);
+        box-shadow: 0 5px 5px var(--glow-effect1),
+        0 0 5px var(--glow-effect2),
+        0 0 10px var(--glow-effect3),
+        0 0 15px var(--glow-effect4);
     }
 
     100% {
-        box-shadow: 0 5px 5px var(--fire-effect-shadow1),
-        0 0 12px var(--fire-effect-shadow2),
-        0 0 12px var(--fire-effect-shadow3),
-        0 0 17px var(--fire-effect-shadow4);
+        box-shadow: 0 5px 5px var(--glow-effect1),
+        0 0 12px var(--glow-effect2),
+        0 0 12px var(--glow-effect3),
+        0 0 17px var(--glow-effect4);
     }
 }
 
@@ -159,21 +151,20 @@ html {
 }
 
 #leaderboard, #settings {
-    font-family: 'Arial', sans-serif;
-    font-size: 16px;
+    font-family: 'Caudex', sans-serif;
+    font-size: 20px;
     border: 1px solid #eee;
     color: white;
-    padding: 10px 20px;
+    padding: 0px 10px 10px 40px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
     margin: 4px 2px;
-    cursor: pointer;
     border-radius: 15px;
-    height: 300px;
-    width: 500px;
-    background-color: #674238;
-    overflow: scroll;
+    height: 350px;
+    width: 550px;
+    background: url("../game/assets/images/menu-texture.png") no-repeat scroll 10px 10px transparent;
+    /*overflow: scroll;*/
 }
 
 table {
@@ -194,19 +185,19 @@ td {
 }
 
 th {
-    background-color: #442D2E;
+    background: url("../game/assets/images/button-texture.png") repeat scroll 0 0 transparent;
     border-bottom: 2px solid #ccc;
 }
 
 tr:nth-child(odd) {
-    background-color: #442D2E;
+    background-color: var(--secondary-menu-color);
 }
 
 tr:hover {
     background-color: #f1f1f14a;
 }
 
-#lbHolder button, #backLB {
+.backButton, #lbHolder button {
     font-family: 'Caudex', sans-serif;
     font-size: 32px;
     margin-bottom: 32px;
@@ -223,25 +214,21 @@ tr:hover {
     transform: translate(-50%, -50%);
 }
 
+.backButton:hover {
+    transform: translate(-50%, -50%) rotate(var(--random-rotation));
+}
+
 #settings button {
     font-family: 'Caudex', sans-serif;
-    font-size: 16px;
+    font-size: 24px;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     background: url("../game/assets/images/button-texture.png") repeat scroll 0 0 transparent;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    top: 30%;
-    margin-top: 30%;
-}
-
-#backLB:hover {
-    background-color: var(--main-menu-hover-bg);
-    box-shadow: 0 5px 15px var(--fire-effect-shadow1),
-    0 0 10px var(--fire-effect-shadow2),
-    0 0 15px var(--fire-effect-shadow3),
-    0 0 20px var(--fire-effect-shadow4);
+    margin-top: 17%;
+    padding: 10px 20px;
 }
 
 #sensitivityValue {

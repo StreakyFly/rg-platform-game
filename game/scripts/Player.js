@@ -8,6 +8,7 @@ import { Entity } from './entities/Entity.js';
 import { showBottomText, showTopText, startClock } from "../../main.js";
 import { gameFinish } from "../../main.js";
 
+
 const cameraView = {
     "3D": "3d",
     "2D": "2d",
@@ -66,7 +67,6 @@ export class Player {
         this.killYMax = 21;
         this.currKillYIndex = 0;
 
-        this.lives = 3;
         this.moveWithPlatformTranslation = [0, 0, 0];
 
         this.initHandlers();
@@ -110,6 +110,7 @@ export class Player {
 
     update(t, dt) {
         if (!gameFinish) startClock();
+
         // calculate forward and right vectors.
         const cos = Math.cos(this.yaw);
         const sin = Math.sin(this.yaw);
@@ -119,6 +120,7 @@ export class Player {
         // map user input to the acceleration vector.
         this.isMoving = false;
         this.moveWithPlatformTranslation = [0, 0, 0];
+
         const acc = vec3.create();
         if (this.keys['KeyW'] || this.keys['KeyUp']) {
             this.isMoving = true;
@@ -226,9 +228,8 @@ export class Player {
         this.handleOrbHolderDetection();
     }
 
-    showDeathScreen() 
-    {
-        showTopText("You died...", 'red', 'black', 1);
+    showDeathScreen() {
+        showTopText("You died...", 'red', 'black', 2);
     }
 
     respawn() {
@@ -245,26 +246,12 @@ export class Player {
         }
 
         // change view
-        // change view
-        if (this.currCheckPointIndex == 2 || this.currCheckPointIndex == 4) {
+        if (this.currCheckPointIndex === 3) {
+        // if (this.currCheckPointIndex === 2 || 4) {
             this.changeTo2D();
         }
         else {
             this.changeTo3D();
-        }
-
-
-        // remove lives
-        this.lives--;
-        if (this.lives == 0) {
-            showBottomText("Game over!"); //TODO nared da je konc
-        }
-
-        const hearts = document.querySelectorAll('.hearts');
-        if (hearts.length > 0) {
-            // Removing hearts in html
-            const lastHeart = hearts[hearts.length - 1];
-            lastHeart.parentNode.removeChild(lastHeart);
         }
     }
 
@@ -272,14 +259,13 @@ export class Player {
         if (!object.checkPointIndex) return;
 
         if (object.checkPointIndex > this.currCheckPointIndex) {
-            // new check point reached
+            // new checkpoint reached
             this.currCheckPointIndex = object.checkPointIndex;
             showBottomText("Checkpoint reached!");
         }
     }
 
     handleJump(dt, onObject) {
-        // console.log(this.isOnObject(), this.velocityY, this.playerTransform.translation[1]);
         if (onObject) {
             this.velocityY = 0;
             // if onObject and isJumping, then reset all jump parameters
@@ -298,7 +284,6 @@ export class Player {
                 this.isDoubleJumping = true;
                 this.velocityY = this.doubleJumpVelocity;
             }
-
             this.velocityY += this.gravity * dt;
 
             this.playerTransform.translation[1] += this.velocityY * dt;
@@ -325,12 +310,12 @@ export class Player {
             if (object.aabb === undefined || object === this.node) continue;
 
             if (this.checkCollision(player, object)) {
-                if (object.isTrap) {
+                if (object.isTrap){
                     this.showDeathScreen();
                     this.respawn();
                     return true;
                 }
-                
+
                 if (object.isEntityPlatform) {
                     this.moveWithPlatformTranslation = object.getComponentOfType(Entity).translation;
                 }
@@ -340,13 +325,14 @@ export class Player {
                     this.respawn();
                     return true;
                 }
-                this.checkForNewCheckpoint(object);
 
-                if (object.isStairs && this.isMoving) {
-                    // move up stairs
-                    const stairsMovementVelocityY = 0.012;
-                    this.playerTransform.translation[1] += stairsMovementVelocityY;
-                }
+                // if (object.isStairs && this.isMoving) {
+                //     // move up the stairs
+                //     const stairsMovementVelocityY = 0.012;
+                //     this.playerTransform.translation[1] += stairsMovementVelocityY;
+                // }
+
+                this.checkForNewCheckpoint(object);
 
                 if (this.velocityY > 0) {
                     return false;

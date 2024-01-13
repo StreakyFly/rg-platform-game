@@ -56,7 +56,7 @@ export class OrbHolder {
     }
 
     dropAllOrbs(collectedOrbArray) {
-        if (collectedOrbArray.length == 0) {
+        if (collectedOrbArray.length === 0) {
             showBottomText("0 Energy Orbs in inventory.", 'red');
             return;
         }
@@ -81,7 +81,7 @@ export class OrbHolder {
     }
 
     updateInventory(collectedOrbArray) {
-        // update visual inventory 
+        // update visual inventory
         const inventoryCount = document.querySelector('.inventory-slot.iCount');
         if (inventoryCount) {
             inventoryCount.textContent = parseInt(collectedOrbArray.length) + "x";

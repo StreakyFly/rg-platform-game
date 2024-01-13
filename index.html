@@ -1,93 +1,104 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FortScape</title>
-  <link href="game/assets/images/favicon.png" rel="icon" type="image/x-icon" />
-  <link href="https://fonts.googleapis.com/css2?family=Caudex&amp;display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css?family=MedievalSharp" rel="stylesheet" />
-  <link href="style/message.css" rel="stylesheet" />
-  <link href="style/game.css" rel="stylesheet" />
-  <link href="style/menu.css" rel="stylesheet" />
+  <link rel="icon" type="image/x-icon" href="game/assets/images/favicon.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caudex&display=swap">
+  <link href='https://fonts.googleapis.com/css?family=MedievalSharp' rel='stylesheet'>
+  <link rel="stylesheet" href="style/message.css">
+  <link rel="stylesheet" href="style/game.css">
+  <link rel="stylesheet" href="style/menu.css">
   <script src="lib/gl-matrix-min.js"></script>
-  <script src="main.js" type="module"></script>
+  <script type="module" src="main.js"></script>
 </head>
 
 <body>
-  <div id="stats" style="display: none;">
-    <div id="time">00:00</div>
-    <div id="inventory">
-      <span class="inventory-slot iCount">0x</span>
-      <span class="inventory-slot iPic"></span>
-    </div>
-    <div id="lives">
-      <div class="hearts" id="heart1"></div>
-      <div class="hearts" id="heart2"></div>
-      <div class="hearts" id="heart3"></div>
-    </div>
-  </div>
-  <div class="main-menu fadein" id="mainMenu">
-    <img alt="FortScape" id="gameName" src="game/assets/images/gameName.png" />
-    <br /><br /><br /><br /><br /><br /><br />
-    <button onclick="startGame()">Start</button>
-    <button onclick="toggleLeaderboard()">Leaderboard</button>
-    <button onclick="toggleSettings()">Settings</button>
-  </div>
-  <div id="lbHolder" style="display: none;">
-    <div id="leaderboard" style="display: none;">
-      <h1>Leaderboard</h1>
-      <table id="lb">
-        <tr id="lbtitle">
-          <th>PLAYER</th>
-          <th>DATE</th>
-          <th>TIME</th>
-          <th>DEATHS</th>
-        </tr>
-      </table>
-    </div>
-    <button id="backLB" onclick="location.reload()">Back</button>
-  </div>
-  <div id="settingsHolder" style="display: none;">
-    <div id="settings" style="display: none;">
-      <h1>Settings</h1>
-      <div class="setting">
-        <label for="playerSensitivity">Player Sensitivity:</label>
-        <input id="playerSensitivity" max="100" min="1" name="sensitivity" type="range" />
-        <span id="sensitivityValue">%</span>
-      </div>
-      <div class="setting">
-        <label for="muteMusic">Mute Music:</label>
-        <input id="muteMusic" name="mute" type="checkbox" />
-      </div>
-      <button onclick="saveSettings()">Save Settings</button>
-    </div>
-    <button id="backLB" onclick="location.reload()">Back</button>
-  </div>
-  <div id="pauseMenu" style="display:none;">
-    <h1>Game Paused</h1>
-    <button onclick="pauseToggle()">Continue</button>
-    <button id="mainMenuB" onclick="location.reload()">Main Menu</button>
-  </div>
-  <div id="loadingScreen" style="display:none;">
-    <div id="loadingContent">
-      <div id="loadingBar"></div>
-      <p id="loadingText">Loading... 0%</p>
-    </div>
-  </div>
-  <div id="topText">
-    <p>Call showTopText() from main.js</p>
-  </div>
-  <div id="bottomText">
-    <p>Call showBottomText() from main.js</p>
-  </div>
-  <div class="fullscreen no-touch">
-    <canvas class="pixelated"></canvas>
-  </div>
-  <div class="fullscreen overlay loader-container">
-  </div>
-</body>
 
+<!--inventory & timer-->
+<div id="stats" style="display: none;">
+  <div id="time">00:00</div>
+  <div id="inventory">
+    <span class="inventory-slot iCount">0x</span>
+    <span class="inventory-slot iPic"></span>
+  </div>
+</div>
+
+<!--main menu-->
+<div id="mainMenu" class="main-menu fadein">
+  <img id="gameName" src="game/assets/images/gameName.png" alt="FortScape">
+  <!--  <label id="gameName">FortScape</label>-->
+  <br><br><br><br><br><br><br>
+  <button id="startGameButton">Start</button>
+  <button id="openLeaderboardButton">Leaderboard</button>
+  <button id="openSettingsButton">Settings</button>
+</div>
+
+<!--leaderboard-->
+<div id="lbHolder" style="display: none;">
+  <div id="leaderboard" style="display: none;">
+    <h1>Leaderboard</h1>
+    <table id="lb">
+      <tr id="lbtitle">
+        <th>PLAYER</th>
+        <th>DATE</th>
+        <th>TIME</th>
+        <th>DEATHS</th>
+      </tr>
+    </table>
+  </div>
+  <button class="backButton" id="leaderboardBackButton">Back</button>
+</div>
+
+<!--settings-->
+<div id="settingsHolder" style="display: none;">
+  <div id="settings" style="display: none;">
+    <h1>Settings</h1>
+    <div class="setting">
+      <label for="mouseSensitivity">Player Sensitivity:</label>
+      <input type="range" id="mouseSensitivity" name="sensitivity" min="1" max="100">
+      <span id="mouseSensitivityValue">%</span>
+    </div>
+    <div class="setting">
+      <label for="volume">Mute Music:</label>
+      <input type="checkbox" id="volume" name="mute">
+    </div>
+    <div class="setting">
+      <label for="renderLight">Render light:</label>
+      <input type="checkbox" id="renderLight" name="renderLight" checked>
+    </div>
+    <button id="saveSettingsButton">Save Settings</button>
+
+  </div>
+  <button class="backButton" id="settingsBackButton">Back</button>
+</div>
+
+<!--pause menu-->
+<div id="pauseMenu" style="display:none;">
+  <h1>Game Paused</h1>
+  <button id="pauseButton">Continue</button>
+  <button onclick="location.reload()" id="mainMenuB">Main Menu</button>
+  <!--  <button id="mainMenuButton">Main Menu</button>-->
+</div>
+<div id="loadingScreen" style="display:none;">
+  <div id="loadingContent">
+    <div id="loadingBar"></div>
+    <p id="loadingText">Loading... 0%</p>
+  </div>
+</div>
+<div id="topText">
+  <p>Call showTopText() from main.js</p>
+</div>
+<div id="bottomText">
+  <p>Call showBottomText() from main.js</p>
+</div>
+<div class="fullscreen no-touch">
+  <canvas class="pixelated"></canvas>
+</div>
+<div class="fullscreen overlay loader-container">
+</div>
+
+</body>
 </html>

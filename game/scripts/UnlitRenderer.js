@@ -15,7 +15,7 @@ import {
 import { shaders } from './shaders.js';
 
 
-export class Renderer extends BaseRenderer {
+export class UnlitRenderer extends BaseRenderer {
 
     constructor(gl) {
         super(gl);

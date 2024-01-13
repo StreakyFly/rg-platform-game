@@ -5,25 +5,39 @@ document.querySelector('.loader-container').remove();
 const bodyElement = document.body;
 // bodyElement.classList.add('main-menu');  // TODO why does this change the menu layout?? This should've already been loaded before
 
-window.startGame = startGame;
-window.toggleSettings = toggleSettings;
-window.saveSettings = saveSettings;
-window.toggleLeaderboard = toggleLeaderboard;
-window.pauseToggle = togglePause;
+document.getElementById('startGameButton').addEventListener('click', startGame);
+document.getElementById('openLeaderboardButton').addEventListener('click', toggleLeaderboard);
+document.getElementById('openSettingsButton').addEventListener('click', toggleSettings);
+document.getElementById('leaderboardBackButton').addEventListener('click', toggleLeaderboard);
+document.getElementById('saveSettingsButton').addEventListener('click', saveSettings);
+document.getElementById('settingsBackButton').addEventListener('click', toggleSettings);
+document.getElementById('pauseButton').addEventListener('click', togglePause);
+// document.getElementById('mainMenuButton').addEventListener('click', showMainMenu);
+
+// randomly rotate buttons when hovered
+document.querySelectorAll('button').forEach(button => {
+    button.addEventListener('mouseenter', () => {
+        console.log("IN");
+        const randomDegree = Math.floor(Math.random() * 3) + 4;
+        const negativeMultiplier = Math.random() < 0.5 ? -1 : 1;
+        button.style.setProperty('--random-rotation', (randomDegree * negativeMultiplier) + 'deg');
+    });
+});
+
 
 export let pause = false;
-let mainMenu = true;
+let isMainMenuActive = true;
 
 // TODO fix this, if you click too early it shows an error
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         document.querySelector('.fadein').classList.remove('fadein');
-    }, 2000);
+    }, 1500);
 });
 
 
 document.addEventListener('keydown', function (event) {
-    if (event.key === 'p' && !mainMenu) {
+    if (event.key === 'p' && !isMainMenuActive) {
         togglePause();
     }
 });
@@ -47,30 +61,24 @@ function togglePause() {
 
 function startGame() {
     showLoadingScreen();
-    updateLoadingScreen(5);
-    mainMenu = false;
+    updateLoadingScreen(7);
+    isMainMenuActive = false;
 
-    // Remove main menu styles and add game styles
+    // remove main menu styles and add game styles
     bodyElement.classList.remove('main-menu');
     bodyElement.classList.add('game');
+    updateLoadingScreen(19);
+    setTimeout(() => updateLoadingScreen(46), 300);
 
-    // bodyElement.classList.remove('game');
-    // bodyElement.classList.add('main-menu');  // TODO FIX: this shouldn't change the menu LAYOUTTTTTTTTTTTTTTTT
-    updateLoadingScreen(45);
-
-    const game = new Game();
+    const game = new Game(getRenderLight());
     game.initialize()
         .then(() => {
-            setTimeout(() => {
-                updateLoadingScreen(80);
-            }, 1000);
+            updateLoadingScreen(81);
             bodyElement.classList.add('bottomText');
             console.log("Game initialized!");
-            updateLoadingScreen(100);
+            setTimeout(() => updateLoadingScreen(100), 150);
             document.getElementById('stats').style.display = 'block';
-            setTimeout(() => {
-                hideLoadingScreen();
-            }, 300);
+            setTimeout(() => hideLoadingScreen(), 300);
         })
         .catch(error => {
             console.error('Error during game initialization:', error);
@@ -84,7 +92,6 @@ function startGame() {
 function showLoadingScreen() {
     document.getElementById('loadingScreen').style.display = 'flex';
 }
-
 
 function hideLoadingScreen() {
     document.getElementById('loadingScreen').style.display = 'none';
@@ -103,11 +110,11 @@ function updateLoadingScreen(percentage, error = false) {
 
 
 export function showTopText(message,
-    text_color = 'white',
-    background_color = 'black',
-    duration = 3, // 1.25
-    font_size = 32,  // 25
-    is_bold = false,
+                            text_color = 'white',
+                            background_color = 'black',
+                            duration = 2,
+                            font_size = 32,  // 25
+                            is_bold = false,
 ) {
     const topTextElement = document.getElementById('topText');
     const fontWeight = is_bold ? 'bold' : 'normal';
@@ -134,11 +141,11 @@ export function showTopText(message,
 
 
 export function showBottomText(message,
-    text_color = 'white',
-    background_color = 'black',
-    duration = 3,  // 1.5
-    font_size = 32,
-    is_bold = false,
+                               text_color = 'white',
+                               background_color = 'black',
+                               duration = 2,
+                               font_size = 32,
+                               is_bold = false,
 ) {
     const textElement = document.getElementById('bottomText');
     const fontWeight = is_bold ? 'bold' : 'normal';
@@ -149,19 +156,23 @@ export function showBottomText(message,
     textElement.style.color = text_color;
     textElement.style.backgroundColor = background_color;
 
+    // clear previous timer
+    clearTimeout(textElement.fadeOutTimer);
+
     // fade in
     setTimeout(function () {
         textElement.style.opacity = '1';
     }, 100);
 
     // fade out after duration
-    setTimeout(function () {
+    textElement.fadeOutTimer = setTimeout(function () {
         textElement.style.opacity = '0';
-        setTimeout(function () {
+        textElement.fadeOutTimer = setTimeout(function () {
             textElement.style.visibility = 'none';
         }, 500);
     }, duration * 1000);
 }
+
 
 
 
@@ -186,10 +197,10 @@ function displayLeaderboard() {
 // dodamo igralca na localstorage
 export function savePlayerData(player, date, time, deaths) {
     if (playerData === null) {
-        localStorage.setItem('leaderboardInfo', JSON.stringify([{ name: player, date: date, time: time, deaths: deaths }]));
+        localStorage.setItem('leaderboardInfo', JSON.stringify([{ name: player, date: date, time: time, deaths: deaths}]));
         return;
     }
-    playerData.push({ name: player, date: date, time: time, deaths: deaths });
+    playerData.push({ name: player, date: date, time: time, deaths: deaths});
     playerData.sort((a, b) => {
         return timeToSeconds(a.time) - timeToSeconds(b.time);
     })
@@ -211,70 +222,98 @@ function showPlayerLB(player, date, time, deaths) {
     deathCell.innerHTML = deaths;
 }
 
+function toggleVisibility(elementId, show) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.style.display = show ? 'block' : 'none';
+    }
+}
+
+function showMainMenu() {
+    bodyElement.classList.remove('game');
+    bodyElement.classList.add('main-menu');
+    toggleVisibility('mainMenu', true);
+    // toggleVisibility('lbHolder', false);
+    // toggleVisibility('leaderboard', false);
+    // toggleVisibility('settingsHolder', false);
+    // toggleVisibility('settings', false);
+}
+
 function toggleLeaderboard() {
     const leaderboard = document.getElementById('leaderboard');
     const lbHolder = document.getElementById('lbHolder');
     const mainMenu = document.getElementById('mainMenu');
-    mainMenu.style.display = mainMenu.style.display === 'none' ? 'block' : 'none';
+    mainMenu.style.display = mainMenu.style.display === 'none' ? 'flex' : 'none';
     lbHolder.style.display = lbHolder.style.display === 'none' ? 'block' : 'none';
     leaderboard.style.display = leaderboard.style.display === 'none' ? 'block' : 'none';
     displayLeaderboard();
 }
 
-const playerSensitivity = document.getElementById('playerSensitivity');
-const muteMusic = document.getElementById('muteMusic');
+const mouseSensitivity = document.getElementById('mouseSensitivity');
+const volume = document.getElementById('volume');
+const renderLight = document.getElementById('renderLight');
 
 function toggleSettings() {
     const settingsHolder = document.getElementById('settingsHolder');
     const settings = document.getElementById('settings');
     const mainMenu = document.getElementById('mainMenu');
-    mainMenu.style.display = mainMenu.style.display === 'none' ? 'block' : 'none';
+    mainMenu.style.display = mainMenu.style.display === 'none' ? 'flex' : 'none';
     settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
     settingsHolder.style.display = settingsHolder.style.display === 'none' ? 'block' : 'none';
 
-    playerSensitivity.value = getPlayerSesnitivity();
-    updateSensitivityValue(document.getElementById('playerSensitivity').value);
+    mouseSensitivity.value = getMouseSensitivity();
+    updateMouseSensitivityValue(document.getElementById('mouseSensitivity').value);
 
-    if (getMuteMusic() === "true") {
-        muteMusic.checked = true;
-    }
+    volume.checked = getVolume();
+    renderLight.checked = getRenderLight();
 }
 
 function saveSettings() {
     showTopText("Settings saved", 'white', 'black', 1.5);
 
-    localStorage.setItem('playerSensitivity', playerSensitivity.value);
-    localStorage.setItem('muteMusic', muteMusic.checked);
+    localStorage.setItem('mouseSensitivity', mouseSensitivity.value);
+    localStorage.setItem('volume', volume.checked);
+    localStorage.setItem('renderLight', renderLight.checked);
 }
 
-export function getPlayerSesnitivity() {
-    if (localStorage.getItem('playerSensitivity') === null) {
-        localStorage.setItem('playerSensitivity', 50);
+export function getMouseSensitivity() {
+    if (localStorage.getItem('mouseSensitivity') === null) {
+        localStorage.setItem('mouseSensitivity', 50);
     }
-    return localStorage.getItem('playerSensitivity');
+    return stringToBool(localStorage.getItem('mouseSensitivity'));
 }
 
-export function getMuteMusic() {
-    if (localStorage.getItem('muteMusic') === null) {
-        localStorage.setItem('muteMusic', false);
+export function getVolume() {
+    if (localStorage.getItem('volume') === null) {
+        localStorage.setItem('volume', false);
     }
-    return localStorage.getItem('muteMusic');
+    return stringToBool(localStorage.getItem('volume'));
 }
 
-function updateSensitivityValue(value) {
-    document.getElementById('sensitivityValue').textContent = value;
+export function getRenderLight() {
+    if (localStorage.getItem('renderLight') === null) {
+        localStorage.setItem('renderLight', true);
+    }
+    return stringToBool(localStorage.getItem('renderLight'));
 }
 
-playerSensitivity.addEventListener('change', function () {
-    updateSensitivityValue(this.value);
+function stringToBool(string) {
+    return string === "true"
+}
+
+function updateMouseSensitivityValue(value) {
+    document.getElementById('mouseSensitivityValue').textContent = value;
+}
+
+mouseSensitivity.addEventListener('change', function () {
+    updateMouseSensitivityValue(this.value);
 })
 
-
-// CLOCK
-
+// timer
 const clock = document.getElementById('time');
 export let timeRunning = false;
 export let gameFinish = false;
+
 export function startClock() {
     if (timeRunning || gameFinish) return;
     timeRunning = true;
@@ -307,7 +346,8 @@ export function finishedGame() {
     const hearts = document.querySelectorAll('.hearts');
     const deaths = 3 - hearts.length;
     const playerName = "testing"
-    showBottomText('You finished the game in ' + time + '! Deaths: ' + deaths, 'white', 'black', 5, 32, true);
+    showBottomText('You completed the game in ' + time + '! Deaths: ' + deaths, 'white', 'black', 5, 32, true);
+    // showBottomText('You found all the orbs and managed to escaped in ' + time + '! Deaths: ' + deaths, 'white', 'black', 5, 32, true);
 
     savePlayerData(playerName, date, time, deaths);
 }
