@@ -1,6 +1,6 @@
 import { Game } from './game/scripts/Game.js';
 import { startClock } from './game/scripts/Stats.js';
-import { toggleSettings, saveSettings, updateMouseSensitivityValue, getRenderLight } from './game/scripts/Settings.js';
+import { toggleSettings, saveSettings, getRenderLight } from './game/scripts/Settings.js';
 import { toggleLeaderboard } from './game/scripts/LeaderBoard.js';
 
 document.querySelector('.loader-container').remove();
@@ -107,7 +107,7 @@ function updateLoadingScreen(percentage, error = false) {
     document.getElementById('loadingText').innerText = 'Loading... ' + percentage + '%';
 }
 
-window.isShowingText = false;
+let isShowingText = false;
 
 export function showText(
     position='top',
@@ -119,14 +119,14 @@ export function showText(
     is_bold = false) {
     const textElement = document.getElementById(position === 'top' ? 'topText' : 'bottomText');
 
-    if (window.isShowingText) {
+    if (isShowingText) {
         setTimeout(function () {
             showText(position, message, text_color, background_color, duration, font_size, is_bold);
         }, (duration + 0.5) * 1000);
         return;
     }
 
-    window.isShowingText = true;
+    isShowingText = true;
 
     const fontWeight = is_bold ? 'bold' : 'normal';
     textElement.innerHTML = `<p style="font-size: ${font_size}px; font-weight: ${fontWeight};">${message}</p>`;
@@ -145,9 +145,26 @@ export function showText(
         textElement.style.opacity = '0';
         setTimeout(function () {
             textElement.style.visibility = 'none';
-            window.isShowingText = false;
+            isShowingText = false;
         }, 500);
     }, duration * 1000);
+}
+
+export function interactionText() {
+    const textElement = document.getElementById('interactText');
+    textElement.style.opacity = '0';
+    textElement.style.display = 'block';
+
+    // fade in
+    setTimeout(function () {
+        textElement.style.opacity = '1';
+    }, 100);
+
+    // fade out after duration
+    setTimeout(function () {
+        textElement.style.opacity = '0';
+    }, 1000);
+
 }
 
 
