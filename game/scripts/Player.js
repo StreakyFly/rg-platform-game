@@ -244,7 +244,7 @@ export class Player {
 
         // change view
         if (this.currCheckPointIndex === 3) {
-            // if (this.currCheckPointIndex === 2 || 4) {
+        // if (this.currCheckPointIndex === 2 || 4) {
             this.changeTo2D();
         }
         else {

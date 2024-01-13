@@ -107,26 +107,34 @@ function updateLoadingScreen(percentage, error = false) {
     document.getElementById('loadingText').innerText = 'Loading... ' + percentage + '%';
 }
 
-let isShowingText = false;
+function toggleVisibility(elementId, show) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.style.display = show ? 'block' : 'none';
+    }
+}
+
+let isShowingBottom = false;
 
 export function showText(
-    position='top',
+    position,
     message,
     text_color = 'white',
     background_color = 'black',
     duration = 2,
     font_size = 32,
-    is_bold = false) {
+    is_bold = false
+) {
     const textElement = document.getElementById(position === 'top' ? 'topText' : 'bottomText');
 
-    if (isShowingText) {
+    if (isShowingBottom && position !== 'top') {
         setTimeout(function () {
             showText(position, message, text_color, background_color, duration, font_size, is_bold);
         }, (duration + 0.5) * 1000);
         return;
     }
 
-    isShowingText = true;
+    isShowingBottom = true;
 
     const fontWeight = is_bold ? 'bold' : 'normal';
     textElement.innerHTML = `<p style="font-size: ${font_size}px; font-weight: ${fontWeight};">${message}</p>`;
@@ -145,17 +153,9 @@ export function showText(
         textElement.style.opacity = '0';
         setTimeout(function () {
             textElement.style.visibility = 'none';
-            window.isShowingText = false;
+            isShowingBottom = false;
         }, 500);
     }, duration * 1000);
-}
-
-
-function toggleVisibility(elementId, show) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        element.style.display = show ? 'block' : 'none';
-    }
 }
 
 function showMainMenu() {
