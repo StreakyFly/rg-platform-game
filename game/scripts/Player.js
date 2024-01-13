@@ -5,8 +5,8 @@ import { Transform } from '../../common/engine/core/Transform.js';
 import { Physics } from "./Physics.js";
 import { Entity } from './entities/Entity.js';
 
-import { showText} from "../../main.js";
-import { gameFinish, startClock} from "./Stats.js";
+import { showText } from "../../main.js";
+import { gameFinish, startClock } from "./Stats.js";
 
 
 const cameraView = {
@@ -16,7 +16,7 @@ const cameraView = {
 
 
 export class Player {
-    constructor(playerTransform, playerCamera, node, OnRespawnMovingObjects, domElement, mouseSensitivityMultiplier=0.5, {
+    constructor(playerTransform, playerCamera, node, OnRespawnMovingObjects, domElement, mouseSensitivityMultiplier = 0.5, {
         pointerSensitivity = 0.002,
     } = {}) {
         this.playerTransform = playerTransform;
@@ -244,7 +244,7 @@ export class Player {
 
         // change view
         if (this.currCheckPointIndex === 3) {
-        // if (this.currCheckPointIndex === 2 || 4) {
+            // if (this.currCheckPointIndex === 2 || 4) {
             this.changeTo2D();
         }
         else {
@@ -293,8 +293,9 @@ export class Player {
         this.validOrbHolder = null;
 
         // detect if in interaction range
+        let lookDirection = [this.playerTransform.rotation[0], this.playerTransform.rotation[1], this.playerTransform.rotation[2], this.playerTransform.rotation[3]];
         for (const orbHolder of this.orbHolderArray) {
-            this.validOrbHolderInteraction = orbHolder.isInteractionRangeValid(this.playerTransform.translation);
+            this.validOrbHolderInteraction = orbHolder.isInteractionRangeValid(this.playerTransform.translation, lookDirection);
             if (this.validOrbHolderInteraction) {
                 this.validOrbHolder = orbHolder;
                 return;
@@ -308,7 +309,7 @@ export class Player {
             if (object.aabb === undefined || object === this.node) continue;
 
             if (this.checkCollision(player, object)) {
-                if (object.isTrap){
+                if (object.isTrap) {
                     this.showDeathScreen();
                     this.respawn();
                     return true;
