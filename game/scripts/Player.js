@@ -326,11 +326,11 @@ export class Player {
                     return true;
                 }
 
-                // if (object.isStairs && this.isMoving) {
-                //     // move up the stairs
-                //     const stairsMovementVelocityY = 0.012;
-                //     this.playerTransform.translation[1] += stairsMovementVelocityY;
-                // }
+                if (object.isStairs && this.isMoving) {
+                    // move up the stairs
+                    const stairsMovementVelocityY = 0.012;
+                    this.playerTransform.translation[1] += stairsMovementVelocityY;
+                }
 
                 this.checkForNewCheckpoint(object);
 

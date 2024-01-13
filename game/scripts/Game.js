@@ -141,11 +141,11 @@ export class Game {
             if (this.scene.children[i] !== undefined) {
                 const material = this.scene.children[i].getComponentOfType(Model).primitives[0].material;
 
-                if (material == lavaMat) {
+                if (material === lavaMat) {
                     material.emissionTexture = emissionTextureOrange;
                 }
 
-                else if (material == portalMat) {
+                else if (material === portalMat) {
                     material.emissionTexture = emissionTextureBlue;
                 }
                 /*
