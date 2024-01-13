@@ -124,26 +124,23 @@ export class Player {
         const acc = vec3.create();
         if (this.keys['KeyW'] || this.keys['KeyUp']) {
             this.isMoving = true;
-            if (this.view === cameraView['3D']) vec3.add(acc, acc, forward);
+            vec3.add(acc, acc, forward);
         }
         if (this.keys['KeyS']) {
             this.isMoving = true;
-            if (this.view === cameraView['3D']) vec3.sub(acc, acc, forward);
+            vec3.sub(acc, acc, forward);
+
         }
         if (this.keys['KeyD']) {
             this.isMoving = true;
             if (this.view === cameraView['3D']) {
                 vec3.add(acc, acc, right);
-            } else {
-                vec3.add(acc, acc, forward);
             }
         }
         if (this.keys['KeyA']) {
             this.isMoving = true;
             if (this.view === cameraView['3D']) {
                 vec3.sub(acc, acc, right);
-            } else {
-                vec3.sub(acc, acc, forward);
             }
         }
         if (this.keys['Space']) {

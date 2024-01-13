@@ -77,7 +77,7 @@ function startGame() {
             updateLoadingScreen(81);
             bodyElement.classList.add('bottomText');
             console.log("Game initialized!");
-            setTimeout(() => updateLoadingScreen(100), 150);
+            setTimeout(() => updateLoadingScreen(100), 100);
             document.getElementById('stats').style.display = 'block';
             setTimeout(() => hideLoadingScreen(), 300);
         })
