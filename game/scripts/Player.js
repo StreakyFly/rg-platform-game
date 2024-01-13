@@ -5,7 +5,7 @@ import { Transform } from '../../common/engine/core/Transform.js';
 import { Physics } from "./Physics.js";
 import { Entity } from './entities/Entity.js';
 
-import { showText } from "../../main.js";
+import { interactionText, showText } from "../../main.js";
 import { gameFinish, startClock } from "./Stats.js";
 
 
@@ -297,6 +297,7 @@ export class Player {
         for (const orbHolder of this.orbHolderArray) {
             this.validOrbHolderInteraction = orbHolder.isInteractionRangeValid(this.playerTransform.translation, lookDirection);
             if (this.validOrbHolderInteraction) {
+                interactionText();
                 this.validOrbHolder = orbHolder;
                 return;
             }

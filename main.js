@@ -1,6 +1,6 @@
 import { Game } from './game/scripts/Game.js';
 import { startClock } from './game/scripts/Stats.js';
-import { toggleSettings, saveSettings, updateMouseSensitivityValue, getRenderLight } from './game/scripts/Settings.js';
+import { toggleSettings, saveSettings, getRenderLight } from './game/scripts/Settings.js';
 import { toggleLeaderboard } from './game/scripts/LeaderBoard.js';
 
 document.querySelector('.loader-container').remove();
@@ -107,13 +107,6 @@ function updateLoadingScreen(percentage, error = false) {
     document.getElementById('loadingText').innerText = 'Loading... ' + percentage + '%';
 }
 
-function toggleVisibility(elementId, show) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        element.style.display = show ? 'block' : 'none';
-    }
-}
-
 let isShowingBottom = false;
 
 export function showText(
@@ -156,6 +149,30 @@ export function showText(
             isShowingBottom = false;
         }, 500);
     }, duration * 1000);
+}
+
+export function interactionText() {
+    const textElement = document.getElementById('interactText');
+    textElement.style.opacity = '0';
+    textElement.style.display = 'block';
+
+    // fade in
+    setTimeout(function () {
+        textElement.style.opacity = '1';
+    }, 100);
+
+    // fade out after duration
+    setTimeout(function () {
+        textElement.style.opacity = '0';
+    }, 1000);
+
+}
+
+function toggleVisibility(elementId, show) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.style.display = show ? 'block' : 'none';
+    }
 }
 
 function showMainMenu() {
