@@ -244,7 +244,7 @@ tr:hover {
     cursor: pointer;
     background: var(--button-texture);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    margin-top: 17%;
+    margin-top: 9%;
     padding: 10px 20px;
 }
 

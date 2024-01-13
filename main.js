@@ -227,30 +227,27 @@ function showPlayerLB(player, date, time, deaths) {
     deathCell.innerHTML = deaths;
 }
 
-function toggleVisibility(elementId, show) {
+function toggleVisibility(elementId, displayValue='block') {
     const element = document.getElementById(elementId);
     if (element) {
-        element.style.display = show ? 'block' : 'none';
+        element.style.display = element.style.display === 'none' ? displayValue : 'none';
     }
 }
 
 function showMainMenu() {
     bodyElement.classList.remove('game');
     bodyElement.classList.add('main-menu');
-    toggleVisibility('mainMenu', true);
-    // toggleVisibility('lbHolder', false);
+    toggleVisibility('mainMenu', 'flex');
     // toggleVisibility('leaderboard', false);
-    // toggleVisibility('settingsHolder', false);
+    // toggleVisibility('lbHolder', false);
     // toggleVisibility('settings', false);
+    // toggleVisibility('settingsHolder', false);
 }
 
 function toggleLeaderboard() {
-    const leaderboard = document.getElementById('leaderboard');
-    const lbHolder = document.getElementById('lbHolder');
-    const mainMenu = document.getElementById('mainMenu');
-    mainMenu.style.display = mainMenu.style.display === 'none' ? 'flex' : 'none';
-    lbHolder.style.display = lbHolder.style.display === 'none' ? 'block' : 'none';
-    leaderboard.style.display = leaderboard.style.display === 'none' ? 'block' : 'none';
+    toggleVisibility('mainMenu', 'flex');
+    toggleVisibility('leaderboard', 'block');
+    toggleVisibility('lbHolder', 'block');
     displayLeaderboard();
 }
 
@@ -259,45 +256,42 @@ const volume = document.getElementById('volume');
 const renderLight = document.getElementById('renderLight');
 
 function toggleSettings() {
-    const settingsHolder = document.getElementById('settingsHolder');
-    const settings = document.getElementById('settings');
-    const mainMenu = document.getElementById('mainMenu');
-    mainMenu.style.display = mainMenu.style.display === 'none' ? 'flex' : 'none';
-    settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
-    settingsHolder.style.display = settingsHolder.style.display === 'none' ? 'block' : 'none';
+    toggleVisibility('mainMenu', 'flex');
+    toggleVisibility('settings', 'block');
+    toggleVisibility('settingsHolder', 'block');
 
     mouseSensitivity.value = getMouseSensitivity();
-    updateMouseSensitivityValue(document.getElementById('mouseSensitivity').value);
-
-    volume.checked = getVolume();
+    volume.value = getVolume();
     renderLight.checked = getRenderLight();
+    updateMouseSensitivityValue(document.getElementById('mouseSensitivity').value);
+    updateVolumeValue(document.getElementById('volume').value);
 }
 
 function saveSettings() {
     showTopText("Settings saved", 'white', 'black', 1.5);
 
-    localStorage.setItem('mouseSensitivity', mouseSensitivity.value);
-    localStorage.setItem('volume', volume.checked);
-    localStorage.setItem('renderLight', renderLight.checked);
+    localStorage.setItem('mouseSensitivity', String(mouseSensitivity.value));
+    localStorage.setItem('volume', String(volume.value));
+    localStorage.setItem('renderLight', String(renderLight.checked));
 }
 
 export function getMouseSensitivity() {
     if (localStorage.getItem('mouseSensitivity') === null) {
-        localStorage.setItem('mouseSensitivity', 50);
+        localStorage.setItem('mouseSensitivity', "50");
     }
-    return stringToBool(localStorage.getItem('mouseSensitivity'));
+    return parseInt(localStorage.getItem('mouseSensitivity'));
 }
 
 export function getVolume() {
     if (localStorage.getItem('volume') === null) {
-        localStorage.setItem('volume', false);
+        localStorage.setItem('volume', "false");
     }
-    return stringToBool(localStorage.getItem('volume'));
+    return parseInt(localStorage.getItem('volume'));
 }
 
 export function getRenderLight() {
     if (localStorage.getItem('renderLight') === null) {
-        localStorage.setItem('renderLight', true);
+        localStorage.setItem('renderLight', "true");
     }
     return stringToBool(localStorage.getItem('renderLight'));
 }
@@ -307,11 +301,19 @@ function stringToBool(string) {
 }
 
 function updateMouseSensitivityValue(value) {
-    document.getElementById('mouseSensitivityValue').textContent = value;
+    document.getElementById('mouseSensitivityValue').textContent = value + " %";
 }
 
-mouseSensitivity.addEventListener('change', function () {
+mouseSensitivity.addEventListener('input', function () {
     updateMouseSensitivityValue(this.value);
+})
+
+function updateVolumeValue(value) {
+    document.getElementById('volumeValue').textContent = value + " %";
+}
+
+volume.addEventListener('input', function () {
+    updateVolumeValue(this.value);
 })
 
 // timer
