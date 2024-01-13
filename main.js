@@ -1,4 +1,7 @@
 import { Game } from './game/scripts/Game.js';
+import { startClock } from './game/scripts/Stats.js';
+import { toggleSettings, saveSettings, updateMouseSensitivityValue, getRenderLight } from './game/scripts/Settings.js';
+import { toggleLeaderboard } from './game/scripts/LeaderBoard.js';
 
 document.querySelector('.loader-container').remove();
 
@@ -13,6 +16,9 @@ document.getElementById('saveSettingsButton').addEventListener('click', saveSett
 document.getElementById('settingsBackButton').addEventListener('click', toggleSettings);
 document.getElementById('pauseButton').addEventListener('click', togglePause);
 document.getElementById('mainMenuButton').addEventListener('click', showMainMenu);
+document.getElementById('mouseSensitivity').addEventListener('change', function () {
+    updateMouseSensitivityValue(this.value);
+})
 
 
 // rotate buttons slightly when hovered
@@ -23,7 +29,6 @@ document.querySelectorAll('button').forEach(button => {
         button.style.setProperty('--random-rotation', (randomDegree * negativeMultiplier) + 'deg');
     });
 });
-
 
 export let pause = false;
 let isMainMenuActive = true;
@@ -82,7 +87,6 @@ function startGame() {
         });
 }
 
-
 function showLoadingScreen() {
     document.getElementById('loadingScreen').style.display = 'flex';
 }
@@ -102,83 +106,48 @@ function updateLoadingScreen(percentage, error = false) {
     document.getElementById('loadingText').innerText = 'Loading... ' + percentage + '%';
 }
 
+window.isShowingBottomText = false;
 
-export function showTopText(message,
-                            text_color = 'white',
-                            background_color = 'black',
-                            duration = 2,
-                            font_size = 32,  // 25
-                            is_bold = false,
-                           ) {
-    const topTextElement = document.getElementById('topText');
-    const fontWeight = is_bold ? 'bold' : 'normal';
-    topTextElement.innerHTML = `<p style="font-size: ${font_size}px; font-weight: ${fontWeight};">${message}</p>`;
-    topTextElement.style.opacity = '0';
-    topTextElement.style.display = 'block';
+export function showText(position, message, text_color = 'white', background_color = 'black', duration = 2, font_size = 32, is_bold = false) {
+    const textElement = document.getElementById(position === 'top' ? 'topText' : 'bottomText');
 
-    topTextElement.style.color = text_color;
-    topTextElement.style.backgroundColor = background_color;
-
-    // fade in
-    setTimeout(function () {
-        topTextElement.style.opacity = '0.75';
-    }, 100);
-
-    // fade out after duration
-    setTimeout(function () {
-        topTextElement.style.opacity = '0';
+    if (position === 'bottom' && window.isShowingBottomText) {
+        // delay showing the new message if there's an ongoing bottom animation
         setTimeout(function () {
-            topTextElement.style.visibility = 'none';
-        }, 500);
-    }, duration * 1000);
-}
-
-
-let isShowingBottomText = false;
-
-export function showBottomText(message,
-                               text_color = 'white',
-                               background_color = 'black',
-                               duration = 2,
-                               font_size = 32,
-                               is_bold = false,
-                              ) {
-    const textElement = document.getElementById('bottomText');
-
-    // check if there is an ongoing animation
-    if (isShowingBottomText) {
-        // delay showing the new message until the current animation finishes
-        setTimeout(function () {
-            showBottomText(message, text_color, background_color, duration, font_size, is_bold);
-        }, (duration + 0.5) * 1000); // delay for the duration + 0.5 seconds
+            showText(position, message, text_color, background_color, duration, font_size, is_bold);
+        }, (duration + 0.5) * 1000);
         return;
     }
 
-    isShowingBottomText = true;
+    if (position === 'bottom') {
+        window.isShowingBottomText = true;
+    }
 
     const fontWeight = is_bold ? 'bold' : 'normal';
     textElement.innerHTML = `<p style="font-size: ${font_size}px; font-weight: ${fontWeight};">${message}</p>`;
     textElement.style.opacity = '0';
     textElement.style.display = 'block';
-
     textElement.style.color = text_color;
     textElement.style.backgroundColor = background_color;
 
     // fade in
     setTimeout(function () {
-        textElement.style.opacity = '1';
+        textElement.style.opacity = position === 'top' ? '0.75' : '1';
     }, 100);
 
     // fade out after duration
-    textElement.fadeOutTimer = setTimeout(function () {
+    setTimeout(function () {
         textElement.style.opacity = '0';
-        textElement.fadeOutTimer = setTimeout(function () {
+        setTimeout(function () {
             textElement.style.visibility = 'none';
-            isShowingBottomText = false; // animation is complete
+            if (position === 'bottom') {
+                window.isShowingBottomText = false;
+            }
         }, 500);
     }, duration * 1000);
 }
 
+<<<<<<< Updated upstream
 
 
 // get player data from localstorage
@@ -228,6 +197,9 @@ function showPlayerLB(player, date, time, deaths) {
 }
 
 function toggleVisibility(elementId, displayValue='block') {
+=======
+function toggleVisibility(elementId, show) {
+>>>>>>> Stashed changes
     const element = document.getElementById(elementId);
     if (element) {
         element.style.display = element.style.display === 'none' ? displayValue : 'none';
@@ -241,6 +213,7 @@ function showMainMenu() {
     // toggleVisibility('leaderboard', false);
     // toggleVisibility('lbHolder', false);
     // toggleVisibility('settings', false);
+<<<<<<< Updated upstream
     // toggleVisibility('settingsHolder', false);
 }
 
@@ -371,4 +344,6 @@ export function removeInventory() {
     if (inventoryCount) {
         inventoryCount.textContent = parseInt(inventoryCount.textContent[0]) - 1 + "x";
     }
+=======
+>>>>>>> Stashed changes
 }

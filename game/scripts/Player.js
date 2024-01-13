@@ -5,8 +5,8 @@ import { Transform } from '../../common/engine/core/Transform.js';
 import { Physics } from "./Physics.js";
 import { Entity } from './entities/Entity.js';
 
-import { showBottomText, showTopText, startClock } from "../../main.js";
-import { gameFinish } from "../../main.js";
+import { showText} from "../../main.js";
+import { gameFinish, startClock} from "./Stats.js";
 
 
 const cameraView = {
@@ -68,6 +68,8 @@ export class Player {
         this.currKillYIndex = 0;
 
         this.moveWithPlatformTranslation = [0, 0, 0];
+
+        this.deaths = 0;
 
         this.initHandlers();
     }
@@ -222,10 +224,11 @@ export class Player {
     }
 
     showDeathScreen() {
-        showTopText("You died...", 'red', 'black', 2);
+        showText("top", "You died...", 'red', 'black', 2);
     }
 
     respawn() {
+        this.deaths++;
         const checkpoint = this.checkPoints[this.currCheckPointIndex]
         this.playerTransform.translation = [...checkpoint.translation];
         //this.playerTransform.rotation = [-1, 0, 0, 0];
@@ -254,7 +257,7 @@ export class Player {
         if (object.checkPointIndex > this.currCheckPointIndex) {
             // new checkpoint reached
             this.currCheckPointIndex = object.checkPointIndex;
-            showBottomText("Checkpoint reached!");
+            showText("bottom", "Checkpoint reached!");
         }
     }
 
