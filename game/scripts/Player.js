@@ -16,7 +16,7 @@ const cameraView = {
 
 
 export class Player {
-    constructor(playerTransform, playerCamera, node, OnRespawnMovingObjects, domElement, {
+    constructor(playerTransform, playerCamera, node, OnRespawnMovingObjects, domElement, mouseSensitivityMultiplier=0.5, {
         pointerSensitivity = 0.002,
     } = {}) {
         this.playerTransform = playerTransform;
@@ -25,6 +25,8 @@ export class Player {
         this.node.addChild(this.playerCamera);
         this.OnRespawnMovingObjects = OnRespawnMovingObjects;
         this.domElement = domElement;
+
+        this.mouseSensitivityMultiplier = mouseSensitivityMultiplier;
 
         this.pointerSensitivity = pointerSensitivity;
 
@@ -65,7 +67,6 @@ export class Player {
         this.currCheckPointIndex = 0;
         this.killYMin = -5;
         this.killYMax = 21;
-        this.currKillYIndex = 0;
 
         this.moveWithPlatformTranslation = [0, 0, 0];
 
@@ -356,8 +357,8 @@ export class Player {
     pointermoveHandler(e) {
         if (this.view === cameraView['2D']) return;
 
-        const dy = e.movementY;
-        const dx = e.movementX;
+        const dy = e.movementY * this.mouseSensitivityMultiplier;
+        const dx = e.movementX * this.mouseSensitivityMultiplier;
         this.pitch -= dy * this.pointerSensitivity;
         this.yaw -= dx * this.pointerSensitivity;
 

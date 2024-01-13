@@ -427,6 +427,7 @@ export class Game {
     async initialize() {
         document.querySelector('.main-menu').remove();
 
+
         await this.start();
 
         this.physics = new Physics(this.scene);
@@ -474,7 +475,7 @@ export class Game {
         const now = window.performance.now();
         const deltaTime = now - this.lastTime;
 
-        if (deltaTime >= 1000) { // Update every second
+        if (deltaTime >= 1000) { // update every second
             this.fps = this.frameCount / (deltaTime / 1000);
             this.frameCount = 0;
             this.lastTime = now;

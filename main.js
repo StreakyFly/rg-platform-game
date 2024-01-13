@@ -6,7 +6,6 @@ import { toggleLeaderboard } from './game/scripts/LeaderBoard.js';
 document.querySelector('.loader-container').remove();
 
 const bodyElement = document.body;
-// bodyElement.classList.add('main-menu');  // TODO why does this change the menu layout?? This should've already been loaded before
 
 document.getElementById('startGameButton').addEventListener('click', startGame);
 document.getElementById('openLeaderboardButton').addEventListener('click', toggleLeaderboard);
@@ -15,11 +14,7 @@ document.getElementById('leaderboardBackButton').addEventListener('click', toggl
 document.getElementById('saveSettingsButton').addEventListener('click', saveSettings);
 document.getElementById('settingsBackButton').addEventListener('click', toggleSettings);
 document.getElementById('pauseButton').addEventListener('click', togglePause);
-document.getElementById('mainMenuButton').addEventListener('click', showMainMenu);
-document.getElementById('mouseSensitivity').addEventListener('change', function () {
-    updateMouseSensitivityValue(this.value);
-})
-
+// document.getElementById('mainMenuButton').addEventListener('click', showMainMenu);
 
 // rotate buttons slightly when hovered
 document.querySelectorAll('button').forEach(button => {
@@ -78,6 +73,7 @@ function startGame() {
             document.getElementById('stats').style.display = 'block';
             setTimeout(() => {
                 hideLoadingScreen();
+                focusElement(game.canvas);
                 startClock();
             }, 300);
         })
@@ -85,6 +81,11 @@ function startGame() {
             console.error('Error during game initialization:', error);
             updateLoadingScreen(100, true);
         });
+}
+
+function focusElement(element) {
+    element.addEventListener('click', () => element.requestPointerLock());
+    element.click();
 }
 
 function showLoadingScreen() {
@@ -108,7 +109,14 @@ function updateLoadingScreen(percentage, error = false) {
 
 window.isShowingText = false;
 
-export function showText(position, message, text_color = 'white', background_color = 'black', duration = 2, font_size = 32, is_bold = false) {
+export function showText(
+    position='top',
+    message,
+    text_color = 'white',
+    background_color = 'black',
+    duration = 2,
+    font_size = 32,
+    is_bold = false) {
     const textElement = document.getElementById(position === 'top' ? 'topText' : 'bottomText');
 
     if (window.isShowingText) {
