@@ -6,10 +6,10 @@ import { Physics } from "./Physics.js";
 import { Entity } from './entities/Entity.js';
 
 import { interactionText,
-         showBottomText,
-         showTopText,
-         gameFinish,
-         startClock,
+    showBottomText,
+    showTopText,
+    gameFinish,
+    startClock,
 } from "./controllers/HUDController.js";
 
 
@@ -123,20 +123,21 @@ export class Player {
         const right = [cos, 0, -sin];
 
         // map user input to the acceleration vector.
-        this.isMoving = false;
+        this.isMoving = true;
         this.moveWithPlatformTranslation = [0, 0, 0];
 
         const acc = vec3.create();
         if (this.keys['KeyW']) {
-            this.isMoving = true;
-            vec3.add(acc, acc, forward);
+            if (this.view === cameraView['3D']) {
+                vec3.add(acc, acc, forward);
+            }
         }
         if (this.keys['KeyS']) {
-            this.isMoving = true;
-            vec3.sub(acc, acc, forward);
+            if (this.view === cameraView['3D']) {
+                vec3.sub(acc, acc, forward);
+            }
         }
         if (this.keys['KeyD']) {
-            this.isMoving = true;
             if (this.view === cameraView['3D']) {
                 vec3.add(acc, acc, right);
             } else {
@@ -144,7 +145,6 @@ export class Player {
             }
         }
         if (this.keys['KeyA']) {
-            this.isMoving = true;
             if (this.view === cameraView['3D']) {
                 vec3.sub(acc, acc, right);
             } else {
@@ -181,8 +181,14 @@ export class Player {
             !this.keys['KeyD'] &&
             !this.keys['KeyA'] &&
             !this.keys['Space']) {
+            this.isMoving = false;
             const decay = Math.exp(dt * Math.log(1 - this.decay));
             vec3.scale(this.velocity, this.velocity, decay);
+        }
+
+        if (this.isMoving) {
+            // stop moving player with platform
+            this.releasePlatfromMovement();
         }
 
         // limit speed to prevent accelerating to infinity and beyond.
@@ -197,6 +203,8 @@ export class Player {
         }
 
         // update translation based on velocity and jump logic.
+        this.handleObjectRoles();
+        this.handleJump(dt);
         vec3.scaleAndAdd(this.playerTransform.translation, this.playerTransform.translation, this.velocity, dt);
 
         // update rotation based on the Euler angles.
@@ -212,8 +220,6 @@ export class Player {
             this.playerCamera.getComponentOfType(Transform).rotation = rotation;
         }
 
-        const isOnObject = this.isOnObject();
-
         if (this.isOnObject()) {
             vec3.scaleAndAdd(this.playerTransform.translation, this.playerTransform.translation, this.moveWithPlatformTranslation, dt);
         }
@@ -223,9 +229,13 @@ export class Player {
             this.respawn();
         }
 
-        this.handleJump(dt, isOnObject);
-
         this.handleOrbHolderDetection();
+    }
+
+    releasePlatfromMovement() {
+        if (this.thisMovingPlatform) {
+            this.thisMovingPlatform.movePlayer = false;
+        }
     }
 
     showDeathScreen() {
@@ -236,19 +246,19 @@ export class Player {
         this.deaths++;
         const checkpoint = this.checkPoints[this.currCheckPointIndex]
         this.playerTransform.translation = [...checkpoint.translation];
-        //this.playerTransform.rotation = [-1, 0, 0, 0];
         this.yaw = checkpoint.yaw;
         this.pitch = checkpoint.pitch;
+
+        // stop moving player with platform
+        this.releasePlatfromMovement();
 
         // enable movement of onRespawn objects
         for (const node of this.OnRespawnMovingObjects) {
             node.getComponentOfType(Entity).resetPos();
             node.getComponentOfType(Entity).movingEnabled = node.getComponentOfType(Entity).movingSinceCheckPoint <= this.currCheckPointIndex;
         }
-
         // change view
-        if (this.currCheckPointIndex === 3) {
-        // if (this.currCheckPointIndex === 2 || 4) {
+        if (this.currCheckPointIndex === 4 || this.currCheckPointIndex === 2) {
             this.changeTo2D();
         }
         else {
@@ -261,14 +271,18 @@ export class Player {
 
         if (object.checkPointIndex > this.currCheckPointIndex) {
             // new checkpoint reached
-            this.currCheckPointIndex = object.checkPointIndex;
+            this.currCheckPointIndex = parseInt(object.checkPointIndex);
+
+            if (this.currCheckPointIndex === 3) {
+                this.respawn();
+            }
             showBottomText("Checkpoint reached!");
         }
     }
 
-    handleJump(dt, onObject) {
+    handleJump(dt) {
         dt = Math.min(dt, 0.15);
-        if (onObject) {
+        if (this.isOnObject()) {
             this.velocityY = 0;
             // if onObject and isJumping, then reset all jump parameters
             if (this.isJumping) {
@@ -310,35 +324,45 @@ export class Player {
         }
     }
 
+    handleObjectRoles() {
+        const player = this.node;
+        for (const object of this.node.parent.children) {
+            if (object.aabb === undefined || object === this.node) continue;
+
+            if (this.checkCollision(player, object)) {
+
+                this.checkForNewCheckpoint(object);
+
+                if (object.isTrap) {
+                    this.showDeathScreen();
+                    this.respawn();
+                }
+
+                if (object.isEntityPlatform) {
+                    this.thisMovingPlatform = object.getComponentOfType(Entity);
+                    this.thisMovingPlatform.movePlayer = true;
+                }
+
+                if (object.isTeleport) {
+                    this.currCheckPointIndex = parseInt(object.teleportToCheckpointIndex);
+                    this.respawn();
+                }
+
+                if (object.isStairs && this.isMoving) {
+                    // move up the stairs
+                    const stairsMovementVelocityY = 0.02;
+                    this.playerTransform.translation[1] += stairsMovementVelocityY;
+                }
+            }
+        }
+    }
+
     isOnObject() {
         const player = this.node;
         for (const object of this.node.parent.children) {
             if (object.aabb === undefined || object === this.node) continue;
 
             if (this.checkCollision(player, object)) {
-                if (object.isTrap) {
-                    this.showDeathScreen();
-                    this.respawn();
-                    return true;
-                }
-
-                if (object.isEntityPlatform) {
-                    this.moveWithPlatformTranslation = object.getComponentOfType(Entity).translation;
-                }
-
-                if (object.isTeleport) {
-                    this.currCheckPointIndex = object.teleportToCheckpointIndex;
-                    this.respawn();
-                    return true;
-                }
-
-                if (object.isStairs && this.isMoving) {
-                    // move up the stairs
-                    const stairsMovementVelocityY = 0.012;
-                    this.playerTransform.translation[1] += stairsMovementVelocityY;
-                }
-
-                this.checkForNewCheckpoint(object);
 
                 if (this.velocityY > 0) {
                     return false;

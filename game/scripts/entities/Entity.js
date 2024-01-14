@@ -1,12 +1,12 @@
 import { vec3 } from '../../../lib/gl-matrix-module.js';
-export class Entity {        
-    constructor(transform, translation, maxDistance, moveBothDirections, velocity, movingSinceCheckPoint) {
+export class Entity {
+    constructor(transform, translation, maxDistance, moveBothDirections, velocity, movingSinceCheckPoint, canMovePlayer) {
         this.transform = transform;
         this.startPos = this.transform.translation.slice();
         this.translation = translation;
         this.moveBothDirections = moveBothDirections;
         this.movingSinceCheckPoint = movingSinceCheckPoint;
-        this.movingEnabled = movingSinceCheckPoint === 0;
+        this.movingEnabled = movingSinceCheckPoint == 0;
         this.minX = this.startPos[0] - maxDistance;
         this.maxX = this.startPos[0] + maxDistance;
         this.minY = this.startPos[1] - maxDistance;
@@ -18,6 +18,10 @@ export class Entity {
 
         this.moveUnlocked = false;
         this.moveUnlockedEnded = false;
+
+        this.player = null;
+        this.movePlayer = false;
+        this.canMovePlayer = canMovePlayer;
     }
 
     reasignMaxDistance(maxDistance) {
@@ -30,10 +34,11 @@ export class Entity {
     }
 
     update(t, dt) {
-        if (this.movingEnabled) this.move();
+        if (this.movingEnabled) this.move(dt);
     }
 
-    move() {
+    move(dt) {
+        dt = 0.01;
         // update translation direction
         let posX = this.transform.translation[0];
         let posY = this.transform.translation[1];
@@ -52,7 +57,12 @@ export class Entity {
             this.updateTranslation(2);
         }
         // move
-        vec3.scaleAndAdd(this.transform.translation, this.transform.translation, this.translation, this.velocity);
+
+        vec3.scaleAndAdd(this.transform.translation, this.transform.translation, this.translation, this.velocity * dt);
+
+        if (this.movePlayer && this.canMovePlayer) {
+            vec3.scaleAndAdd(this.player.playerTransform.translation, this.player.playerTransform.translation, this.translation, this.velocity * dt);
+        }
     }
 
     updateTranslation(axisIndex) {
