@@ -1,5 +1,5 @@
-import { pause } from '../../main.js';
-import { getDate } from '../scripts/menus/Leaderboard.js';
+import { pause } from '../../../main.js';
+import { getDate } from '../menus/Leaderboard.js';
 
 // timer
 const clock = document.getElementById('time');

@@ -1,5 +1,5 @@
 import { Game } from './game/scripts/Game.js';
-import { startClock } from './game/controllers/HUDController.js';
+import { startClock } from './game/scripts/controllers/HUDController.js';
 import {
     toggleSettings,
     saveSettings,
