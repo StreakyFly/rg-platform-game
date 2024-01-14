@@ -7,7 +7,7 @@ import {
     getVolume,
 } from './game/scripts/menus/Settings.js';
 import { toggleLeaderboard } from './game/scripts/menus/Leaderboard.js';
-import { showLoadingScreen } from "./game/scripts/menus/LoadingScreen.js";
+import { showLoadingScreen, updateLoadingScreen, hideLoadingScreen } from "./game/scripts/menus/LoadingScreen.js";
 import { toggleVisibility, startClock } from './game/scripts/controllers/HUDController.js';
 import { SoundController } from "./game/scripts/controllers/SoundController.js";
 
