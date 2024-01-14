@@ -9,7 +9,7 @@ import {
     Transform,
 } from '../../common/engine/core.js';
 
-import { pause } from '../../main.js';
+import { pause, soundController } from '../../main.js';
 
 import { JSONLoader } from '../../common/engine/loaders/JSONLoader.js';
 import { ImageLoader } from '../../common/engine/loaders/ImageLoader.js';
@@ -202,8 +202,6 @@ export class Game {
             throw new Error('Scene or Camera not present in glTF');
         }
 
-        // this.render();
-
         new ResizeSystem({ canvas: this.canvas, resize: this.resize.bind(this) }).start();
         new UpdateSystem({ update: this.update.bind(this), render: this.render.bind(this) }).start();
     }
@@ -316,7 +314,6 @@ export class Game {
                 continue;
             }
 
-
             // assign teleports
             if (blendObject.name.includes("Teleport")) {
                 blendObjectNode.isTeleport = true;
@@ -420,6 +417,7 @@ export class Game {
             }
         });
         this.physics.update(time, dt);  // handle collisions
+        this.updateSoundParameters();
     }
 
     render() {
@@ -432,6 +430,12 @@ export class Game {
         if (this.renderer instanceof Renderer) {
             this.renderer.resize(width, height);
         }
+    }
+
+    updateSoundParameters() {
+        const playerTransform = this.player.getComponentOfType(Transform);
+        soundController.updateListenerPosition(...playerTransform.translation)
+        soundController.updateListenerOrientation(playerTransform.rotation);
     }
 
     async initialize() {

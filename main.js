@@ -23,6 +23,7 @@ document.getElementById('saveSettingsButton').addEventListener('click', saveSett
 document.getElementById('settingsBackButton').addEventListener('click', toggleSettings);
 document.addEventListener('keydown', handleKeyDown);
 
+export let soundController = null;
 
 let gameCanvas = null;
 
@@ -106,4 +107,20 @@ function togglePause() {
 function focusElement(element) {
     element.addEventListener('click', () => element.requestPointerLock());
     element.click();
+}
+
+let backgroundSource = null;
+function firstInteraction() {
+    soundController = new SoundController();
+    loadSounds().then(r => {
+        backgroundSource = soundController.playSound('test', { loop: true });
+        document.removeEventListener('click', firstInteraction);
+    });
+}
+
+document.addEventListener('click', firstInteraction);
+
+async function loadSounds() {
+    await soundController.loadSound('test', '../../game/assets/audio/Vexento - Glow.mp3')
+    // soundController.loadSound('test2', '../../game/assets/audio/Vexento - Glow.mp3')
 }

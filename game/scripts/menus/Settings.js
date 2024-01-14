@@ -1,4 +1,5 @@
 import { showTopText, toggleVisibility } from "../controllers/HUDController.js";
+import { soundController } from "../../../main.js";
 
 const mouseSensitivity = document.getElementById('mouseSensitivity');
 const volume = document.getElementById('volume');
@@ -14,6 +15,7 @@ export function toggleSettings() {
     renderLight.checked = getRenderLight();
     updateMouseSensitivityValue(document.getElementById('mouseSensitivity').value);
     updateVolumeValue(document.getElementById('volume').value);
+    soundController.setGlobalVolume(volume.value);
 }
 
 export function saveSettings() {
@@ -62,5 +64,7 @@ export function updateVolumeValue(value) {
 }
 
 volume.addEventListener('input', function () {
-    updateVolumeValue(this.value);
+    const volume = this.value;
+    updateVolumeValue(volume);
+    soundController.setGlobalVolume(volume);
 })

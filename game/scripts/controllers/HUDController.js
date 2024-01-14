@@ -83,6 +83,11 @@ export function showBottomText(message,
 ) {
     const textElement = document.getElementById('bottomText');
 
+    const isMessageSame = textElement.textContent === message;
+    if (isMessageSame) {
+        return;
+    }
+
     // check if there is an ongoing animation
     if (isShowingBottomText) {
         // delay showing the new message until the current animation finishes
@@ -100,9 +105,6 @@ export function showBottomText(message,
     textElement.style.display = 'block';
     textElement.style.backgroundColor = backgroundColor;
 
-    console.log(textElement);
-
-
     // fade in
     setTimeout(function () {
         textElement.style.opacity = '1';
@@ -114,6 +116,7 @@ export function showBottomText(message,
         textElement.fadeOutTimer = setTimeout(function () {
             textElement.style.visibility = 'none';
             isShowingBottomText = false; // animation is complete
+            textElement.textContent = '';
         }, 500);
     }, duration * 1000);
 }
