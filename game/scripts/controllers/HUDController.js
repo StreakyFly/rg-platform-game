@@ -1,5 +1,4 @@
 import { pause } from '../../../main.js';
-import { getDate, savePlayerData } from '../menus/Leaderboard.js';
 
 // timer
 const clock = document.getElementById('time');
@@ -14,7 +13,7 @@ export function startClock() {
     let time = '00:00';
     clock.textContent = time;
     setInterval(function () {
-        if (timeRunning && !pause) {
+        if (timeRunning && !pause && document.getElementById('endGame-menu').style.display != 'block') {
             seconds++;
             if (seconds === 60) {
                 seconds = 0;
@@ -27,19 +26,6 @@ export function startClock() {
             clock.textContent = time;
         }
     }, 1000);
-}
-
-export function finishedGame(deaths) {
-    if (gameFinish) return;
-    gameFinish = true
-    timeRunning = false;
-    const time = clock.textContent;
-    const date = getDate();
-    const playerName = "testing"
-    showBottomText('You completed the game in ' + time + '! Deaths: ' + deaths, 'white', 'black', 5, 32, true);
-    // showBottomText('You found all the orbs and managed to escaped in ' + time + '! Deaths: ' + deaths, 'white', 'black', 5, 32, true);
-
-    savePlayerData(playerName, date, time, deaths);
 }
 
 

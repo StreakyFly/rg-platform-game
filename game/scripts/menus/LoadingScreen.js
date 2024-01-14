@@ -1,4 +1,3 @@
-
 export function showLoadingScreen() {
     document.getElementById('loadingScreen').style.display = 'flex';
 }
@@ -37,6 +36,7 @@ export function checkName() {
     if (playerName.length <= 0) {
         return false;
     }
+    localStorage.setItem('playerName', playerName);
     clickedPlay = true;
     return true;
 }

@@ -58,7 +58,14 @@ export function toggleLeaderboard() {
     mainMenu.style.display = mainMenu.style.display === 'none' ? 'flex' : 'none';
     lbHolder.style.display = lbHolder.style.display === 'none' ? 'block' : 'none';
     leaderboard.style.display = leaderboard.style.display === 'none' ? 'block' : 'none';
-    displayLeaderboard();
+    if (leaderboard.style.display === 'block') {
+        displayLeaderboard();
+    } else {
+        const table = document.getElementById("lb");
+        while (table.rows.length > 1) {
+            table.deleteRow(1);
+        }
+    }
 }
 
 export function getDate() {

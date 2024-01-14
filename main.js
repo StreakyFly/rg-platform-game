@@ -6,7 +6,7 @@ import {
     getMouseSensitivity,
     getVolume,
 } from './game/scripts/menus/Settings.js';
-import { toggleLeaderboard } from './game/scripts/menus/Leaderboard.js';
+import { toggleLeaderboard, getDate, savePlayerData } from './game/scripts/menus/Leaderboard.js';
 import { showLoadingScreen, updateLoading, hideLoadingScreen, checkName, clickedPlay } from "./game/scripts/menus/LoadingScreen.js";
 import { toggleVisibility, startClock } from './game/scripts/controllers/HUDController.js';
 import { SoundController } from "./game/scripts/controllers/SoundController.js";
@@ -27,10 +27,11 @@ document.getElementById('play').addEventListener('click', checkName);
 export let soundController = null;
 
 let gameCanvas = null;
-
+let isLoadingActive = false;
 
 async function startGame() {
     showLoadingScreen();
+    isLoadingActive = true;
     isMainMenuActive = false;
     updateLoading();
     const game = new Game(getRenderLight());
@@ -44,6 +45,7 @@ async function startGame() {
                 }
                 document.getElementById('stats').style.display = 'block';
                 hideLoadingScreen();
+                isLoadingActive = false;
                 focusElement(game.canvas);
                 gameCanvas = game.canvas;
                 startClock();
@@ -54,7 +56,6 @@ async function startGame() {
             console.error('Error during game initialization:', error);
         });
 }
-
 
 // rotate buttons slightly when hovered
 document.querySelectorAll('button').forEach(button => {
@@ -69,7 +70,7 @@ export let pause = false;
 let isMainMenuActive = true;
 
 async function handleKeyDown(event) {
-    if (event.key === 'p' && !isMainMenuActive) {
+    if (event.key === 'p' && !isMainMenuActive && !isLoadingActive) {
         togglePause();
     }
     if (event.key === 'm' && pause) {
@@ -79,6 +80,10 @@ async function handleKeyDown(event) {
         document.exitPointerLock();
         toggleVisibility('stats');
     }
+    // TODO remove, just for testing end screen
+    if (event.key === 'e' && !isMainMenuActive) {
+        toggleEnd();
+    }
 }
 
 document.addEventListener('click', function (event) {
@@ -86,6 +91,34 @@ document.addEventListener('click', function (event) {
         togglePause();
     }
 });
+
+export function endGame(deaths) {
+    document.exitPointerLock();
+    gameCanvas.classList.add('blur-effect');
+    document.getElementById('endGame-menu').style.display = 'block';
+    const clock = document.getElementById('time');
+
+    const time = clock.textContent;
+    const date = getDate();
+    const name = localStorage.getItem('playerName');
+
+    document.getElementById('endData').innerHTML = `You escaped the castle in ${time} and died ${deaths == 1 ? deaths + " time" : deaths + " times"}!`;
+    savePlayerData(name, date, time, deaths);
+}
+
+// TODO: Testing end screen
+// let end = false;
+// function toggleEnd() {
+//     end = !end
+//     if (end) {
+//         endGame(3);
+//     } else {
+//         document.getElementById('endGame-menu').style.display = 'none';
+//         gameCanvas.requestPointerLock();
+//         gameCanvas.click();
+//         gameCanvas.classList.remove('blur-effect');
+//     }
+// }
 
 function togglePause() {
     pause = !pause;
