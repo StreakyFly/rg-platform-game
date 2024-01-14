@@ -54,7 +54,7 @@ function showPlayerLB(player, date, time, deaths) {
 export function toggleLeaderboard() {
     const leaderboard = document.getElementById('leaderboard');
     const lbHolder = document.getElementById('lbHolder');
-    const mainMenu = document.getElementById('mainMenu');
+    const mainMenu = document.getElementById('main-menu');
     mainMenu.style.display = mainMenu.style.display === 'none' ? 'flex' : 'none';
     lbHolder.style.display = lbHolder.style.display === 'none' ? 'block' : 'none';
     leaderboard.style.display = leaderboard.style.display === 'none' ? 'block' : 'none';

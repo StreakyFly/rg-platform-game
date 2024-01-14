@@ -42,7 +42,7 @@ export class Renderer extends BaseRenderer {
         this.bloomIntensity = 0.7;
         this.bloomBuffers = [];
 
-        this.contrast = 1.2;
+        this.contrast = 1.1;
 
         this.createGeometryBuffer();
         this.createLightsBuffer();

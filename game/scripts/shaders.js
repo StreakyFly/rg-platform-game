@@ -448,12 +448,11 @@ void main() {
     vec4 bloomColor = texture(uBloomTexture, vPosition);
     vec4 lightsColor = texture(uLightsTexture, vPosition);
 
-    // vec4 combinedColor = bloomColor + lightsColor - 0.4;
-    vec4 combinedColor = (bloomColor * 0.5 + lightsColor * 0.5) + 0.1;
-    // vec4 combinedColor = mix(bloomColor, lightsColor, 0.5);
-
-    combinedColor.rgb = pow(combinedColor.rgb * uExposure, vec3(1.0 / uGamma));
+    // vec4 combinedColor = abs(bloomColor - lightsColor);  // looks interestingly cool
+    // vec4 combinedColor = (bloomColor * 0.5 + lightsColor * 0.5) + 0.1;
+    vec4 combinedColor = mix(bloomColor, lightsColor, 0.5);
     
+    combinedColor.rgb = pow(combinedColor.rgb * uExposure, vec3(1.0 / uGamma));
     combinedColor.rgb = ((combinedColor.rgb - 0.5) * uContrast) + 0.5;  // change contrast
 
     oColor = vec4(combinedColor.rgb, 1.0);

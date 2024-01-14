@@ -4,106 +4,107 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FortScape</title>
+  <title>Fortscape</title>
   <link rel="icon" type="image/x-icon" href="game/assets/images/favicon.png">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caudex&display=swap">
   <link href='https://fonts.googleapis.com/css?family=MedievalSharp' rel='stylesheet'>
   <link rel="stylesheet" href="style/message.css">
-  <link rel="stylesheet" href="style/game.css">
   <link rel="stylesheet" href="style/menu.css">
+  <link rel="stylesheet" href="style/index.css">
   <script src="lib/gl-matrix-min.js"></script>
   <script type="module" src="main.js"></script>
 </head>
 
 <body>
-
-  <!--inventory & timer-->
-  <div id="stats" style="display: none;">
-    <div id="time">00:00</div>
-    <div id="inventory">
-      <span class="inventory-slot iPic"></span>
-      <span class="inventory-slot iCount">0x</span>
-    </div>
+  <div class="fullscreen no-touch">
+    <canvas class="pixelated"></canvas>
+  </div>
+  <div class="fullscreen overlay loader-container">
   </div>
 
   <!--main menu-->
-  <div id="mainMenu" class="main-menu fadein">
-    <!--  <img id="gameName" src="game/assets/images/gameName.png" alt="FortScape">-->
-    <label id="gameName">FortScape</label>
-    <br><br><br><br><br><br><br>
-    <button id="startGameButton">Start</button>
-    <button id="openLeaderboardButton">Leaderboard</button>
-    <button id="openSettingsButton">Settings</button>
-  </div>
-
-  <!--leaderboard-->
-  <div id="lbHolder" style="display: none;">
-    <div id="leaderboard" style="display: none;">
-      <h1>Leaderboard</h1>
-      <table id="lb">
-        <tr id="lbtitle">
-          <th>PLAYER</th>
-          <th>DATE</th>
-          <th>TIME</th>
-          <th>DEATHS</th>
-        </tr>
-      </table>
+  <div id="menu-container" class="fullscreen overlay">
+    <div id="main-menu">
+      <label id="game-title">Fortscape</label>
+      <button id="startGameButton">Start</button>
+      <button id="openLeaderboardButton">Leaderboard</button>
+      <button id="openSettingsButton">Settings</button>
     </div>
-    <button class="backButton" id="leaderboardBackButton">Back</button>
-  </div>
 
-  <!--settings-->
-  <div id="settingsHolder" style="display: none;">
-    <div id="settings" style="display: none;">
-      <h1>Settings</h1>
-      <div class="setting">
-        <label for="mouseSensitivity">Mouse Sensitivity:</label>
-        <input type="range" id="mouseSensitivity" name="sensitivity" min="1" max="100">
-        <span id="mouseSensitivityValue">?%</span>
-        <br><br>
+    <!--leaderboard-->
+    <div id="lbHolder" style="display: none;">
+      <div id="leaderboard" style="display: none;">
+        <h1>Leaderboard</h1>
+        <table id="lb">
+          <tr id="lbtitle">
+            <th>PLAYER</th>
+            <th>DATE</th>
+            <th>TIME</th>
+            <th>DEATHS</th>
+          </tr>
+        </table>
+        <button class="backButton" id="leaderboardBackButton">Back</button>
       </div>
-      <div class="setting">
-        <label for="volume">Audio Volume:</label>
-        <input type="range" id="volume" name="volume" min="1" max="100">
-        <span id="volumeValue">?%</span>
-        <br><br>
-      </div>
-      <div class="setting">
-        <label for="renderLight">Render light:</label>
-        <input type="checkbox" id="renderLight" name="renderLight" checked>
-      </div>
-      <button id="saveSettingsButton">Save Settings</button>
     </div>
-    <button class="backButton" id="settingsBackButton">Back</button>
+
+    <!--settings-->
+    <div id="settingsHolder" style="display: none;">
+      <div id="settings" style="display: none;">
+        <h1>Settings</h1>
+        <div class="setting">
+          <label for="mouseSensitivity">Mouse Sensitivity:</label>
+          <input type="range" id="mouseSensitivity" name="sensitivity" min="1" max="100">
+          <span id="mouseSensitivityValue">?%</span>
+          <br><br>
+        </div>
+        <div class="setting">
+          <label for="volume">Audio Volume:</label>
+          <input type="range" id="volume" name="volume" min="1" max="100">
+          <span id="volumeValue">?%</span>
+          <br><br>
+        </div>
+        <div class="setting">
+          <label for="renderLight">Render light:</label>
+          <input type="checkbox" id="renderLight" name="renderLight" checked>
+        </div>
+        <button id="saveSettingsButton">Save Settings</button>
+        <button class="backButton" id="settingsBackButton">Back</button>
+      </div>
+    </div>
   </div>
 
-  <!--pause menu-->
-  <div id="pauseMenu" style="display:none;">
-    <h1>Game Paused</h1>
-    <button id="pauseButton">Continue</button>
-    <button onclick="location.reload()" id="mainMenuB">Main Menu</button>
-    <!--    <button id="mainMenuButton">Main Menu</button>-->
-  </div>
+<!--  loading screen-->
   <div id="loadingScreen" style="display:none;">
     <div id="loadingContent">
       <div id="loadingBar"></div>
       <p id="loadingText">Loading... 0%</p>
     </div>
   </div>
+
+  <!--pause menu-->
+  <div id="pause-menu" class="fullscreen overlay" style="display:none;">
+    <div><b>Paused</b></div>
+    <div>To resume <b>click</b> anywhere on the screen</div>
+  </div>
+
+  <!--inventory & timer-->
+  <div id="stats" style="display: none;">
+    <div id="time">00:00</div>
+    <div id="inventory">
+      <span class="inventory-slot iPic"></span>
+      <span class="inventory-slot iCount">x 0</span>
+    </div>
+  </div>
+
   <!--texts-->
   <div id="interactText">
     <p>Press 'F' to interact.</p>
   </div>
   <div id="topText">
-    <p>Call showText("top") from main.js</p>
+    <p>Call showTopText() from main.js</p>
   </div>
   <div id="bottomText">
-    <p>Call showText("bottom") from main.js</p>
-  </div>
-  <div class="fullscreen no-touch">
-    <canvas class="pixelated"></canvas>
-  </div>
-  <div class="fullscreen overlay loader-container">
+    <p>Call showBottomText() from main.js</p>
   </div>
 
 </body>

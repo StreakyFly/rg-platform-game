@@ -425,8 +425,8 @@ export class Game {
     }
 
     async initialize() {
-        document.querySelector('.main-menu').remove();
-
+        // document.querySelector('.main-menu').remove();
+        // document.querySelector('.main-menu-container').remove();
 
         await this.start();
 
@@ -448,7 +448,7 @@ export class Game {
             new JSONLoader().loadMesh('../../../common/models/cube.json'),
             new JSONLoader().loadMesh('../../../common/models/bunny.json'),
             new ImageLoader().load('../../game/assets/images/grayscale.png'),
-            new ImageLoader().load('../../game/assets/images/sky.png'),
+            new ImageLoader().load('../../game/assets/images/sky.jpg'),
         ]);
 
         this.skybox = new Node();

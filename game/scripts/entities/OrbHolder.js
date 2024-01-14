@@ -43,8 +43,8 @@ export class OrbHolder {
         const dotProduct = normalizedDirectionToHolder[0] * cameraDirection[0] + normalizedDirectionToHolder[2] * cameraDirection[2];
         const angle = Math.acos(dotProduct) * (180 / Math.PI);
 
-        // Check if player is facing the orb holder within a threshold angle, e.g., 45 degrees
-        return angle <= 35;
+        // Check if player is facing the orb holder within a threshold angle
+        return angle <= 20;
     }
 
     quaternionToDirection(quaternion, forward) {
@@ -118,7 +118,7 @@ export class OrbHolder {
         // update visual inventory
         const inventoryCount = document.querySelector('.inventory-slot.iCount');
         if (inventoryCount) {
-            inventoryCount.textContent = parseInt(collectedOrbArray.length) + "x";
+            inventoryCount.textContent = "x " + parseInt(collectedOrbArray.length);
         }
     }
 }

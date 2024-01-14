@@ -1,44 +1,46 @@
-.game body, .game html {
+body, html {
+    /*mix-blend-mode: luminosity;  !* 5 minute crafts black and white filter xD *!*/
     margin: 0;
     padding: 0;
 }
 
-.game * {
+* {
     font-family: 'Caudex', sans-serif;
+    color: whitesmoke
 }
 
-.game .fullscreen {
+.fullscreen {
     width: 100vw;
     height: 100vh;
     overflow: hidden;
 }
 
-.game .fullscreen > * {
+.fullscreen > * {
     width: 100%;
     height: 100%;
 }
 
-.game .overlay {
+.overlay {
     position: fixed;
     left: 0;
     top: 0;
 }
 
-.game .no-touch {
+.no-touch {
     touch-action: none;
 }
 
-.game .pixelated {
+.pixelated {
     image-rendering: pixelated;
 }
 
-.game .loader-container {
+.loader-container {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.game .loader {
+.loader {
     width: 100px;
     height: 100px;
 

@@ -1,33 +1,54 @@
 :root {
     --main-menu-color: #3f3f3f;
     --secondary-menu-color: #313131;
-    --main-menu-hover-bg: #a9a099;
 
-    --glow-effect1: rgba(0, 0, 0, 0.3);
-    --glow-effect2: #331c19;
-    --glow-effect3: #452c2c;
-    --glow-effect4: #7b5247;
-
-    --button-texture: url("../game/assets/images/button-texture.png") repeat scroll 0 0 transparent;
+    --button-texture: url('../game/assets/images/button-texture.png') no-repeat scroll 0 0 transparent;
+    --menu-texture: url('../game/assets/images/menu-image.png') no-repeat scroll 0 0 transparent;
+    --title-texture: url('../game/assets/images/title-image.png') no-repeat scroll 0 0 transparent;
+    --orb-icon: url('../game/assets/images/orb-icon.png');
 }
 
-body,
-html {
-    font-family: 'Caudex', sans-serif;
-    /*mix-blend-mode: luminosity;  !* 5 minute crafts black and white filter xD *!*/
-    margin: 0;
-    padding: 0;
-    background-image: url('../game/assets/images/main-menu.png');
+#menu-container {
+    background-image: url('../game/assets/images/menu.png');
     background-size: cover;
-    background-repeat: no-repeat;
     background-position: center;
-    background-attachment: fixed;
-    height: 100%;
-    width: 100%;
-    min-height: 100vh;
+    background-repeat: no-repeat;
 }
 
-.main-menu,
+#game-title {
+    font-size: 124px;
+    font-weight: bold;
+    background: var(--title-texture);
+    background-size: 100%;
+    margin-bottom: 3%;
+    padding: 75px 75px;
+    filter: drop-shadow(0px 10px 12px rgba(0, 0, 0, 0.7));
+}
+
+button {
+    width: 425px;
+    height: 85px;
+    font-size: 32px;
+    margin-bottom: 32px;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    background: var(--button-texture);
+    transition: transform 0.2s ease;filter: drop-shadow(0px 7px 9px rgba(0, 0, 0, 0.5));
+}
+
+button:hover {
+    transform: rotate(var(--random-rotation));
+}
+
+#menu-container > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: -30px 0;
+}
+
 #leaderboard, #settings {
     display: flex;
     flex-direction: column;
@@ -39,77 +60,33 @@ html {
     transform: translate(-50%, -50%);
 }
 
-.main-menu button {
-    font-family: 'Caudex', sans-serif;
-    font-size: 32px;
-    margin-bottom: 32px;
-    padding: 10px 20px;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    background: var(--button-texture);
-    transition: transform 0.2s ease;
-    width: 400px;
-}
-
-#gameName {
-    font-size: 128px;
-    font-weight: bold;
-    color: white;
-    background: url("../game/assets/images/menu-texture.png") repeat-x scroll 0 0 transparent;
-}
-
-button:hover {
-    transform: rotate(var(--random-rotation));
-}
-
-/*.glow button:hover {*/
-/*    animation: glow 1s infinite alternate;*/
-/*}*/
-
-/*@keyframes glow {*/
-/*    0% {*/
-/*        box-shadow: 0 5px 5px var(--glow-effect1),*/
-/*        0 0 5px var(--glow-effect2),*/
-/*        0 0 10px var(--glow-effect3),*/
-/*        0 0 15px var(--glow-effect4);*/
-/*    }*/
-
-/*    100% {*/
-/*        box-shadow: 0 5px 5px var(--glow-effect1),*/
-/*        0 0 12px var(--glow-effect2),*/
-/*        0 0 12px var(--glow-effect3),*/
-/*        0 0 17px var(--glow-effect4);*/
-/*    }*/
-/*}*/
-
-#pauseMenu {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 300px;
-    padding: 20px;
-    background-color: rgba(0, 0, 0, 0.8);
-    color: white;
-    text-align: center;
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
-    z-index: 1000;
-}
-
-#pauseMenu button {
+#pause-menu {
+    z-index: 10;
     width: 100%;
-    padding: 10px;
-    margin-top: 30px;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+#pause-menu div:first-child {
+    font-size: 175px;
+    margin-bottom: 0;
+    padding-bottom: 0;
+    transform: translateY(-10%);
+}
+
+#pause-menu > div {
     font-size: 24px;
-    color: white;
-    background: var(--button-texture);
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: transform 0.2s ease;
+    flex: 0;
+    transform: translateY(-100%);
+}
+
+.blur-effect {
+    filter: blur(7px);
 }
 
 #loadingScreen {
@@ -118,8 +95,7 @@ button:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.903);
-    color: white;
+    background-color: rgba(0, 0, 0, 0.9);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -128,7 +104,6 @@ button:hover {
 
 #loadingContent {
     text-align: center;
-    font-family: 'Times New Roman', serif;
 }
 
 #loadingBar {
@@ -153,20 +128,46 @@ button:hover {
 }
 
 #leaderboard, #settings {
-    font-family: 'Caudex', sans-serif;
     font-size: 22px;
-    color: white;
     /*border: 1px solid #eee;*/
-    padding: 50px 0px 0px 0px;
+    padding: 50px 0 0 0;
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    /*margin: 4px 2px;*/
     height: 500px;
     width: 700px;
-    background: url("../game/assets/images/menu-image.png") no-repeat scroll 0px 0px transparent;
-    filter: drop-shadow(0px 10px 12px rgba(0,0, 0, 0.7));
-    /*overflow: scroll;*/
+    background: var(--menu-texture);
+    filter: drop-shadow(0px 10px 12px rgba(0, 0, 0, 0.7));
+}
+
+#leaderboard button, #settings button {
+    background-size: 100%;
+    background-position: center;
+    margin-top: 9%;
+    width: 275px;
+    height: 60px;
+    font-size: 30px;
+    border: none;
+}
+
+.backButton {
+    width: 275px;
+    height: 60px;
+    font-size: 30px;
+    margin-bottom: 32px;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    background: var(--button-texture);
+    position: absolute;
+    top: 90%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    filter: drop-shadow(0px 0px 0px rgba(0, 0, 0, 0));
+}
+
+.backButton:hover, #leaderboardBackButton:hover {
+    transform: translate(-50%, -50%) rotate(var(--random-rotation));
 }
 
 table {
@@ -203,7 +204,7 @@ th:nth-of-type(4) { /* DEATHS column */
 
 th {
     background: var(--button-texture);
-    /*border-bottom: 2px solid #ccc;*/
+    background-size: 123px 50px;  /* TODO replace with a custom texture and change to 100% */
 }
 
 tr:nth-child(odd) {
@@ -212,40 +213,6 @@ tr:nth-child(odd) {
 
 tr:hover {
     background-color: #f1f1f14a;
-}
-
-.backButton, #lbHolder button {
-    font-family: 'Caudex', sans-serif;
-    font-size: 32px;
-    margin-bottom: 32px;
-    padding: 10px 20px;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    background: var(--button-texture);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    position: absolute;
-    top: 82%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.backButton:hover, #leaderboardBackButton:hover {
-    transform: translate(-50%, -50%) rotate(var(--random-rotation));
-}
-
-#settings button {
-    font-family: 'Caudex', sans-serif;
-    font-size: 24px;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    background: var(--button-texture);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    margin-top: 9%;
-    padding: 10px 20px;
 }
 
 #sensitivityValue {
@@ -257,16 +224,16 @@ tr:hover {
     top: 0;
     left: 0;
     background-color: rgba(0,0,0,0.5);
-    color: white;
     padding: 10px;
     text-align: center;
-    /* add border radius to the right side*/
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
+    border-bottom-right-radius: 12px;
 }
+
 #time {
-    font-size: 50px;
+    font-size: 36px;
     margin-bottom: 10px;
+    margin-right: 10px;
+    margin-left: 10px;
 }
 
 .inventory-slot {
@@ -280,12 +247,10 @@ tr:hover {
 }
 
 .iCount {
-    font-size: 20px;
+    font-size: 24px;
 }
 
 .iPic {
-    width: 40px;
-    height: 40px;
-    background-image: url("../game/assets/images/orb-icon.png");
+    background-image: var(--orb-icon);
     background-size: cover;
 }

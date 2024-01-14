@@ -1,18 +1,11 @@
-import { showTopText } from "../../main.js";
+import { showTopText, toggleVisibility } from "../../main.js";
 
 const mouseSensitivity = document.getElementById('mouseSensitivity');
 const volume = document.getElementById('volume');
 const renderLight = document.getElementById('renderLight');
 
-function toggleVisibility(elementId, displayValue='block') {
-    const element = document.getElementById(elementId);
-    if (element) {
-        element.style.display = element.style.display === 'none' ? displayValue : 'none';
-    }
-}
-
 export function toggleSettings() {
-    toggleVisibility('mainMenu', 'flex');
+    toggleVisibility('main-menu', 'flex');
     toggleVisibility('settings', 'block');
     toggleVisibility('settingsHolder', 'block');
 
