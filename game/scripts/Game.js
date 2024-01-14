@@ -18,7 +18,6 @@ import { ResizeSystem } from '../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../common/engine/systems/UpdateSystem.js';
 import { calculateAxisAlignedBoundingBox, mergeAxisAlignedBoundingBoxes } from '../../common/engine/core/MeshUtils.js';
 
-
 import { UnlitRenderer } from './renderers/UnlitRenderer.js';
 import { Renderer } from './renderers/Renderer.js';
 
@@ -425,9 +424,6 @@ export class Game {
     }
 
     async initialize() {
-        // document.querySelector('.main-menu').remove();
-        // document.querySelector('.main-menu-container').remove();
-
         await this.start();
 
         this.physics = new Physics(this.scene);

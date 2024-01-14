@@ -1,5 +1,5 @@
 import { Orb } from './Orb.js';
-import { showBottomText } from "../../../main.js";
+import { showBottomText } from "../controllers/HUDController.js";
 
 
 export class OrbHolder {
