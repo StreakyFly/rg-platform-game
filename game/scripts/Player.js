@@ -6,7 +6,7 @@ import { Physics } from "./Physics.js";
 import { Entity } from './entities/Entity.js';
 
 import { interactionText, showBottomText, showTopText } from "../../main.js";
-import { gameFinish, startClock } from "./Stats.js";
+import { gameFinish, startClock } from "../controllers/HUDController.js";
 
 
 const cameraView = {

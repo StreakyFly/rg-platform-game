@@ -1,4 +1,4 @@
-import { showTopText, toggleVisibility } from "../../main.js";
+import { showTopText, toggleVisibility } from "../../../main.js";
 
 const mouseSensitivity = document.getElementById('mouseSensitivity');
 const volume = document.getElementById('volume');

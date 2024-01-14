@@ -1,13 +1,13 @@
 import { Game } from './game/scripts/Game.js';
-import { startClock } from './game/scripts/Stats.js';
+import { startClock } from './game/controllers/HUDController.js';
 import {
     toggleSettings,
     saveSettings,
     getRenderLight,
     getMouseSensitivity,
     getVolume,
-} from './game/scripts/Settings.js';
-import { toggleLeaderboard } from './game/scripts/LeaderBoard.js';
+} from './game/scripts/menus/Settings.js';
+import { toggleLeaderboard } from './game/scripts/menus/Leaderboard.js';
 
 document.querySelector('.loader-container').remove();
 

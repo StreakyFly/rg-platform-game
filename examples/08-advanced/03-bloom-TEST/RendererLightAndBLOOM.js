@@ -12,7 +12,7 @@ import {
     getModels,
 } from '../../../common/engine/core/SceneUtils.js';
 
-import {Light} from "../../../game/scripts/Light.js";
+import {Light} from "../../../game/scripts/entities/Light.js";
 
 import { shaders } from './shaders.js';
 

@@ -6,7 +6,7 @@ export class Entity {
         this.translation = translation;
         this.moveBothDirections = moveBothDirections;
         this.movingSinceCheckPoint = movingSinceCheckPoint;
-        this.movingEnabled = movingSinceCheckPoint == 0;
+        this.movingEnabled = movingSinceCheckPoint === 0;
         this.minX = this.startPos[0] - maxDistance;
         this.maxX = this.startPos[0] + maxDistance;
         this.minY = this.startPos[1] - maxDistance;

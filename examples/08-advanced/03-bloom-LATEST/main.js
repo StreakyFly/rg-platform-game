@@ -23,7 +23,7 @@ import {
 import { Renderer } from './Renderer.js';
 import { GLTFLoader } from "../../../common/engine/loaders/GLTFLoader.js";
 import { Player } from "../../../game/scripts/DEBUG_Player.js";
-import { Light } from "../../../game/scripts/Light.js";
+import { Light } from "../../../game/scripts/entities/Light.js";
 
 let frameCount = 0;
 let lastTime = window.performance.now();

@@ -4,7 +4,7 @@ import { Entity } from './Entity.js'
 export class Pillar extends Entity {
     distanceTraveled = 0;
     constructor(
-        velocity,  // float  TODO change velocity to speed, so it receives speed and direction and then calculates velocity from that
+        velocity,  // float
         translation,  // [float, float, float]
         travelDistance  // float
     ) {

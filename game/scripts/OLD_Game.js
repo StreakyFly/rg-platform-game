@@ -18,7 +18,7 @@ import { ResizeSystem } from '../../common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from '../../common/engine/systems/UpdateSystem.js';
 import { calculateAxisAlignedBoundingBox, mergeAxisAlignedBoundingBoxes } from '../../common/engine/core/MeshUtils.js';
 
-import { Renderer } from './Renderer.js';
+import { Renderer } from './renderers/Renderer.js';
 
 import { Physics } from './Physics.js';
 
@@ -26,8 +26,8 @@ import { Physics } from './Physics.js';
 import { Player } from './Player.js';
 
 import { Entity } from './entities/Entity.js';
-import { RespawnPoint } from './RespawnPoint.js';
-import { Light } from './Light.js';
+import { RespawnPoint } from './entities/RespawnPoint.js';
+import { Light } from './entities/Light.js';
 
 
 export class Game {

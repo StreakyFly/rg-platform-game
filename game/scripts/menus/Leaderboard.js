@@ -21,7 +21,7 @@ function displayLeaderboard() {
     });
 }
 
-// dodamo igralca na localstorage
+// dodamo igralca v localstorage
 export function savePlayerData(player, date, time, deaths) {
     let playerData = JSON.parse(localStorage.getItem('leaderboardInfo'));
     if (playerData === null) {

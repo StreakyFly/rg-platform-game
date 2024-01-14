@@ -19,8 +19,8 @@ import { UpdateSystem } from '../../common/engine/systems/UpdateSystem.js';
 import { calculateAxisAlignedBoundingBox, mergeAxisAlignedBoundingBoxes } from '../../common/engine/core/MeshUtils.js';
 
 
-import { UnlitRenderer } from './UnlitRenderer.js';
-import { Renderer } from './Renderer.js';
+import { UnlitRenderer } from './renderers/UnlitRenderer.js';
+import { Renderer } from './renderers/Renderer.js';
 
 import { Physics } from './Physics.js';
 
@@ -30,8 +30,8 @@ import { Player } from './Player.js';
 import { Entity } from './entities/Entity.js';
 import { OrbHolder } from './entities/OrbHolder.js';
 import { Orb } from './entities/Orb.js';
-import { RespawnPoint } from './RespawnPoint.js';
-import { Light } from './Light.js';
+import { RespawnPoint } from './entities/RespawnPoint.js';
+import { Light } from './entities/Light.js';
 
 
 export class Game {

@@ -469,6 +469,8 @@ export const shaders = {
         vertex: envmapVertex,
         fragment: envmapFragment,
     },
+
+    // light shader
     burley: {
         vertex: burleyVertex,
         fragment: burleyFragment
