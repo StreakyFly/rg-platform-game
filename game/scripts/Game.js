@@ -19,8 +19,8 @@ import { UpdateSystem } from '../../common/engine/systems/UpdateSystem.js';
 import { calculateAxisAlignedBoundingBox, mergeAxisAlignedBoundingBoxes } from '../../common/engine/core/MeshUtils.js';
 
 
-import { UnlitRenderer } from './renderers/UnlitRenderer.js';
-import { Renderer } from './renderers/Renderer.js';
+import { UnlitRenderer } from './UnlitRenderer.js';
+import { Renderer } from './Renderer.js';
 
 import { Physics } from './Physics.js';
 
@@ -30,8 +30,8 @@ import { Player } from './Player.js';
 import { Entity } from './entities/Entity.js';
 import { OrbHolder } from './entities/OrbHolder.js';
 import { Orb } from './entities/Orb.js';
-import { RespawnPoint } from './entities/RespawnPoint.js';
-import { Light } from './entities/Light.js';
+import { RespawnPoint } from './RespawnPoint.js';
+import { Light } from './Light.js';
 
 
 export class Game {
@@ -113,6 +113,11 @@ export class Game {
             const model = node.getComponentOfType(Model);
             if (!model) {
                 return;
+            }
+
+            const entity = node.getComponentOfType(Entity);
+            if (entity) {
+                entity.player = this.player.getComponentOfType(Player);
             }
 
             node.isStatic = true;
@@ -346,36 +351,37 @@ export class Game {
                 let movingObjectTranslation = [0, 0, 0];
                 let moveBothDirections = !blendObject.name.includes("OneDir");
                 let movingSinceCheckPoint = 0;
-                let velocity = 1;
+                let velocity = 0;
+                let canMovePlayer = false;
 
                 if (blendObject.name.includes("UP")) {
                     movingObjectTranslation = [0, 1, 0];
-                    velocity = 0.005;
+                    velocity = 0.6;
                 }
                 else if (blendObject.name.includes("DOWN")) {
                     movingObjectTranslation = [0, -1, 0];
-                    velocity = 0.005;
+                    velocity = 0.6;
                 }
                 else if (blendObject.name.includes("LEFT")) {
                     movingObjectTranslation = [-1, 0, 0];
-                    velocity = 0.002;
+                    velocity = 0.4;
                 }
                 else if (blendObject.name.includes("RIGHT")) {
                     movingObjectTranslation = [1, 0, 0];
-                    velocity = 0.002;
+                    velocity = 0.4;
                 }
                 else if (blendObject.name.includes("FORWARD")) {
                     movingObjectTranslation = [0, 0, 1];
-                    velocity = 0.002;
+                    velocity = 0.4;
                 }
                 else if (blendObject.name.includes("BACKWARDS")) {
                     movingObjectTranslation = [0, 0, -1];
-                    velocity = 0.002;
+                    velocity = 0.4;
                 }
                 else if (blendObject.name.includes("CHASETRAP")) {
                     maxTranslationDistance = 30;
                     movingObjectTranslation = [0, 0, -1];
-                    velocity = 0.01;
+                    velocity = 1;
                 }
 
                 if (blendObject.name.includes("MovingOnSpawn")) {
@@ -383,9 +389,12 @@ export class Game {
                     this.OnRespawnMovingObjectNodes.push(blendObjectNode);
                 }
 
-                if (blendObject.name.includes("Platform")) blendObjectNode.isEntityPlatform = true;
+                if (blendObject.name.includes("Platform")) {
+                    canMovePlayer = true;
+                    blendObjectNode.isEntityPlatform = true;
+                }
 
-                blendObjectNode.addComponent(new Entity(blendObjectNode.getComponentOfType(Transform), movingObjectTranslation, maxTranslationDistance, moveBothDirections, velocity, movingSinceCheckPoint));
+                blendObjectNode.addComponent(new Entity(blendObjectNode.getComponentOfType(Transform), movingObjectTranslation, maxTranslationDistance, moveBothDirections, velocity, movingSinceCheckPoint, canMovePlayer));
             }
 
             // assign unlockable doors
@@ -395,7 +404,7 @@ export class Game {
                 // this object will not move until unlocked, therefore disable movement
                 const entity = blendObjectNode.getComponentOfType(Entity);
                 entity.movingEnabled = false;
-                entity.velocity = 0.01;
+                entity.velocity = 1.5;
                 entity.reasignMaxDistance(2.8);
                 this.unlockableDoorArray.push(blendObjectNode);
             }
