@@ -73,11 +73,20 @@
     </div>
   </div>
 
-<!--  loading screen-->
+  <!--  loading screen-->
   <div id="loadingScreen" style="display:none;">
+    <div id="nameInput" style="display: none;">
+      <div id="nameStuff">
+        <label id="nameText" for="name">Greetings traveler, what is your name?</label>
+        <br>
+        <input type="text" id="name" name="name" placeholder="Your name...">
+        <br>
+        <button id="play">Play</button>
+      </div>
+    </div>
+
     <div id="loadingContent">
-      <div id="loadingBar"></div>
-      <p id="loadingText">Loading... 0%</p>
+      <div id="loadingBar">10%</div>
     </div>
   </div>
 

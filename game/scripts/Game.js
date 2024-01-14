@@ -32,9 +32,6 @@ import { Orb } from './entities/Orb.js';
 import { RespawnPoint } from './entities/RespawnPoint.js';
 import { Light } from './entities/Light.js';
 
-import { updateLoadingScreen } from "./menus/LoadingScreen.js";
-
-
 export class Game {
     constructor(improvedRenderer = true) {
         this.canvas = document.querySelector('canvas');

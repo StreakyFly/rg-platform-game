@@ -34,14 +34,15 @@ button {
     border: none;
     cursor: pointer;
     background: var(--button-texture);
-    transition: transform 0.2s ease;filter: drop-shadow(0px 7px 9px rgba(0, 0, 0, 0.5));
+    transition: transform 0.2s ease;
+    filter: drop-shadow(0px 7px 9px rgba(0, 0, 0, 0.5));
 }
 
 button:hover {
     transform: rotate(var(--random-rotation));
 }
 
-#menu-container > div {
+#menu-container>div {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -49,7 +50,8 @@ button:hover {
     margin: -30px 0;
 }
 
-#leaderboard, #settings {
+#leaderboard,
+#settings {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -79,7 +81,7 @@ button:hover {
     transform: translateY(-10%);
 }
 
-#pause-menu > div {
+#pause-menu>div {
     font-size: 24px;
     flex: 0;
     transform: translateY(-100%);
@@ -95,26 +97,100 @@ button:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.9);
+    background-image: url('../game/assets/images/LoadingScreen.png');
+    background-size: cover;
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 2000;
 }
 
-#loadingContent {
+#nameInput {
+    font-size: 18px;
+    border-radius: 5px;
+    margin: 10px 0;
+    text-align: center;
+    position: absolute;
+}
+
+#nameStuff {
+    margin: 15%;
+    transition: opacity 1s ease;
+}
+
+#name {
+    margin-top: 15px;
+    font-size: 25px;
+    border: 2px solid #94734e;
+    background-color: #f4f1e7;
+    font-family: 'Times New Roman', serif;
+    border-radius: 8px;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    color: #503a20;
     text-align: center;
 }
 
-#loadingBar {
-    width: 0;
-    height: 20px;
-    background-color: green;
-    margin-bottom: 10px;
+#name:focus {
+    outline: none;
+    border-color: #c9a87c;
+    box-shadow: 0 0 5px rgba(169, 129, 92, 0.5);
 }
 
-#loadingText {
-    color: #fff;
+
+#nameText {
+    font-size: 30px;
+    margin-bottom: 10px;
+    text-align: center;
+    text-shadow:
+        -1px -1px 0 black,
+        1px -1px 0 black,
+        -1px 1px 0 black,
+        1px 1px 0 black,
+
+        /* 2px stroke */
+        -2px -2px 0 black,
+        -1px -2px 0 black,
+        -2px -1px 0 black,
+        -0px -2px 0 black,
+        -2px -0px 0 black,
+
+        2px -2px 0 black,
+        1px -2px 0 black,
+        2px -1px 0 black,
+        0px -2px 0 black,
+        2px -0px 0 black,
+
+        -2px 2px 0 black,
+        -1px 2px 0 black,
+        -2px 1px 0 black,
+        -0px 2px 0 black,
+        -2px 0px 0 black,
+
+        2px 2px 0 black,
+        1px 2px 0 black,
+        2px 1px 0 black,
+        0px 2px 0 black,
+        2px 0px 0 black;
+
+}
+
+
+#loadingContent {
+    width: 100%;
+    background-color: #ddd;
+}
+
+#loadingBar {
+    background-color: green;
+    position: absolute;
+    bottom: 40px;
+    left: 20%;
+    max-width: 62%;
+    margin: auto;
+    width: 10%;
+    height: 30px;
+    text-align: center;
+    line-height: 30px;
+    color: white;
 }
 
 @keyframes fadeIn {
@@ -127,7 +203,9 @@ button:hover {
     }
 }
 
-#leaderboard, #settings {
+#leaderboard,
+#settings,
+#nameInput {
     font-size: 22px;
     /*border: 1px solid #eee;*/
     padding: 50px 0 0 0;
@@ -140,7 +218,9 @@ button:hover {
     filter: drop-shadow(0px 10px 12px rgba(0, 0, 0, 0.7));
 }
 
-#leaderboard button, #settings button {
+#leaderboard button,
+#settings button,
+#nameInput button {
     background-size: 100%;
     background-position: center;
     margin-top: 9%;
@@ -166,7 +246,8 @@ button:hover {
     filter: drop-shadow(0px 0px 0px rgba(0, 0, 0, 0));
 }
 
-.backButton:hover, #leaderboardBackButton:hover {
+.backButton:hover,
+#leaderboardBackButton:hover {
     transform: translate(-50%, -50%) rotate(var(--random-rotation));
 }
 
@@ -184,16 +265,23 @@ td {
     text-align: left;
 }
 
-th:nth-of-type(1) { /* PLAYER column */
+th:nth-of-type(1) {
+    /* PLAYER column */
     width: 25%;
 }
-th:nth-of-type(2) { /* DATE column */
+
+th:nth-of-type(2) {
+    /* DATE column */
     width: 25%;
 }
-th:nth-of-type(3) { /* TIME column */
+
+th:nth-of-type(3) {
+    /* TIME column */
     width: 25%;
 }
-th:nth-of-type(4) { /* DEATHS column */
+
+th:nth-of-type(4) {
+    /* DEATHS column */
     width: 25%;
 }
 
@@ -204,7 +292,8 @@ th:nth-of-type(4) { /* DEATHS column */
 
 th {
     background: var(--button-texture);
-    background-size: 123px 50px;  /* TODO replace with a custom texture and change to 100% */
+    background-size: 123px 50px;
+    /* TODO replace with a custom texture and change to 100% */
 }
 
 tr:nth-child(odd) {
@@ -223,7 +312,7 @@ tr:hover {
     position: fixed;
     top: 0;
     left: 0;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0, 0, 0, 0.5);
     padding: 10px;
     text-align: center;
     border-bottom-right-radius: 12px;

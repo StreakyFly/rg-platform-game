@@ -7,7 +7,7 @@ import {
     getVolume,
 } from './game/scripts/menus/Settings.js';
 import { toggleLeaderboard } from './game/scripts/menus/Leaderboard.js';
-import { showLoadingScreen, updateLoadingScreen, hideLoadingScreen } from "./game/scripts/menus/LoadingScreen.js";
+import { showLoadingScreen, updateLoading, hideLoadingScreen, checkName, clickedPlay } from "./game/scripts/menus/LoadingScreen.js";
 import { toggleVisibility, startClock } from './game/scripts/controllers/HUDController.js';
 import { SoundController } from "./game/scripts/controllers/SoundController.js";
 
@@ -22,38 +22,36 @@ document.getElementById('leaderboardBackButton').addEventListener('click', toggl
 document.getElementById('saveSettingsButton').addEventListener('click', saveSettings);
 document.getElementById('settingsBackButton').addEventListener('click', toggleSettings);
 document.addEventListener('keydown', handleKeyDown);
+document.getElementById('play').addEventListener('click', checkName);
 
 export let soundController = null;
 
 let gameCanvas = null;
 
-function startGame() {
+
+async function startGame() {
     showLoadingScreen();
     isMainMenuActive = false;
-    updateLoadingScreen(7);
-
-    updateLoadingScreen(19);
-    setTimeout(() => updateLoadingScreen(46), 500);
-
+    updateLoading();
     const game = new Game(getRenderLight());
     game.initialize()
-        .then(() => {
-            updateLoadingScreen(81);
+        .then(async () => {
             bodyElement.classList.add('bottomText');
-            console.log("Game initialized!");
-            setTimeout(() => updateLoadingScreen(100), 100);
-            document.getElementById('stats').style.display = 'block';
-            setTimeout(() => {
+            console.log("Game initialized!");            
+            setTimeout(async () => {
+                while (!clickedPlay) {
+                    await new Promise(r => setTimeout(r, 100));
+                }
+                document.getElementById('stats').style.display = 'block';
                 hideLoadingScreen();
                 focusElement(game.canvas);
                 gameCanvas = game.canvas;
                 startClock();
-                toggleVisibility('menu-container')  // TODO move this somewhere better
+                toggleVisibility('menu-container')
             }, 300);
         })
         .catch(error => {
             console.error('Error during game initialization:', error);
-            updateLoadingScreen(100, true);
         });
 }
 
