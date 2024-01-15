@@ -3,8 +3,8 @@ import {
     toggleSettings,
     saveSettings,
     getRenderLight,
-    getMouseSensitivity,
     getVolume,
+    getMouseSensitivity,
 } from './game/scripts/menus/Settings.js';
 import { toggleLeaderboard, getDate, savePlayerData } from './game/scripts/menus/Leaderboard.js';
 import { showLoadingScreen, updateLoading, hideLoadingScreen, checkName, clickedPlay } from "./game/scripts/menus/LoadingScreen.js";
@@ -13,49 +13,20 @@ import { SoundController } from "./game/scripts/controllers/SoundController.js";
 
 document.querySelector('.loader-container').remove();
 
-const bodyElement = document.body;
-
 document.getElementById('startGameButton').addEventListener('click', startGame);
 document.getElementById('openLeaderboardButton').addEventListener('click', toggleLeaderboard);
 document.getElementById('openSettingsButton').addEventListener('click', toggleSettings);
 document.getElementById('leaderboardBackButton').addEventListener('click', toggleLeaderboard);
 document.getElementById('saveSettingsButton').addEventListener('click', saveSettings);
 document.getElementById('settingsBackButton').addEventListener('click', toggleSettings);
-document.addEventListener('keydown', handleKeyDown);
 document.getElementById('play').addEventListener('click', checkName);
-
-export let soundController = null;
-
-let gameCanvas = null;
-let isLoadingActive = false;
-
-async function startGame() {
-    showLoadingScreen();
-    isLoadingActive = true;
-    isMainMenuActive = false;
-    updateLoading();
-    const game = new Game(getRenderLight());
-    game.initialize()
-        .then(async () => {
-            bodyElement.classList.add('bottomText');
-            console.log("Game initialized!");            
-            setTimeout(async () => {
-                while (!clickedPlay) {
-                    await new Promise(r => setTimeout(r, 100));
-                }
-                document.getElementById('stats').style.display = 'block';
-                hideLoadingScreen();
-                isLoadingActive = false;
-                focusElement(game.canvas);
-                gameCanvas = game.canvas;
-                startClock();
-                toggleVisibility('menu-container')
-            }, 300);
-        })
-        .catch(error => {
-            console.error('Error during game initialization:', error);
-        });
-}
+document.addEventListener('keydown', handleKeyDown);
+document.addEventListener('click', firstInteraction);
+document.addEventListener('click', function (event) {
+    if (pause) {
+        togglePause();
+    }
+});
 
 // rotate buttons slightly when hovered
 document.querySelectorAll('button').forEach(button => {
@@ -66,35 +37,60 @@ document.querySelectorAll('button').forEach(button => {
     });
 });
 
+let game = null;
 export let pause = false;
-let isMainMenuActive = true;
+export let soundController = null;
+export let isLoadingActive = false;
+export const mouseSensitivity = getMouseSensitivity();
+
+
+async function startGame() {
+    showLoadingScreen();
+    isLoadingActive = true;
+    updateLoading();
+    game = new Game(getRenderLight());
+    game.initialize()
+        .then(async () => {
+            menuToGame();
+        })
+        .catch(error => {
+            console.error('Error during game initialization:', error);
+        });
+}
 
 async function handleKeyDown(event) {
-    if (event.key === 'p' && !isMainMenuActive && !isLoadingActive) {
+    if (event.key === 'p' && !document.getElementById('main-menu').style.display && !isLoadingActive) {
         togglePause();
     }
     if (event.key === 'm' && pause) {
-        isMainMenuActive = true;
         toggleVisibility('menu-container')
         togglePause();
         document.exitPointerLock();
         toggleVisibility('stats');
-    }
-    // TODO remove, just for testing end screen
-    if (event.key === 'e' && !isMainMenuActive) {
-        toggleEnd();
+        // soundController.stopPlaying(null, true, ['ambience']);
+        window.location.reload()
     }
 }
 
-document.addEventListener('click', function (event) {
-    if (pause) {
-        togglePause();
-    }
-});
+function menuToGame() {
+    document.body.classList.add('bottomText');
+    console.log("Game initialized!");
+    setTimeout(async () => {
+        while (!clickedPlay) {
+            await new Promise(r => setTimeout(r, 100));
+        }
+        toggleVisibility('stats', 'block', true);
+        hideLoadingScreen();
+        isLoadingActive = false;
+        focusElement(game.canvas);
+        startClock();
+        toggleVisibility('menu-container')
+    }, 300);
+}
 
 export function endGame(deaths) {
     document.exitPointerLock();
-    gameCanvas.classList.add('blur-effect');
+    game.canvas.classList.add('blur-effect');
     document.getElementById('endGame-menu').style.display = 'block';
     const clock = document.getElementById('time');
 
@@ -102,23 +98,9 @@ export function endGame(deaths) {
     const date = getDate();
     const name = localStorage.getItem('playerName');
 
-    document.getElementById('endData').innerHTML = `You escaped the castle in ${time} and died ${deaths == 1 ? deaths + " time" : deaths + " times"}!`;
+    document.getElementById('endData').innerHTML = `You escaped the castle in ${time} and died ${deaths === 1 ? deaths + " time" : deaths + " times"}!`;
     savePlayerData(name, date, time, deaths);
 }
-
-// TODO: Testing end screen
-// let end = false;
-// function toggleEnd() {
-//     end = !end
-//     if (end) {
-//         endGame(3);
-//     } else {
-//         document.getElementById('endGame-menu').style.display = 'none';
-//         gameCanvas.requestPointerLock();
-//         gameCanvas.click();
-//         gameCanvas.classList.remove('blur-effect');
-//     }
-// }
 
 function togglePause() {
     pause = !pause;
@@ -127,11 +109,11 @@ function togglePause() {
 
     if (pause) {
         document.exitPointerLock();
-        gameCanvas.classList.add('blur-effect');
+        game.canvas.classList.add('blur-effect');
     } else {
-        gameCanvas.requestPointerLock();
-        gameCanvas.click();
-        gameCanvas.classList.remove('blur-effect');
+        game.canvas.requestPointerLock();
+        game.canvas.click();
+        game.canvas.classList.remove('blur-effect');
     }
 }
 
@@ -140,18 +122,25 @@ function focusElement(element) {
     element.click();
 }
 
-let backgroundSource = null;
 function firstInteraction() {
+    document.removeEventListener('click', firstInteraction);
     soundController = new SoundController();
-    loadSounds().then(r => {
-        backgroundSource = soundController.playSound('test', { loop: true });
-        document.removeEventListener('click', firstInteraction);
+    soundController.setGlobalVolume(getVolume());
+    loadSounds().then(() => {
+        soundController.playSound('ambience', { loop: true, globalSound: true });
+        soundController.setVolume('ambience', 50);
     });
 }
 
-document.addEventListener('click', firstInteraction);
-
 async function loadSounds() {
-    await soundController.loadSound('test', '../../game/assets/audio/Vexento - Glow.mp3')
-    // soundController.loadSound('test2', '../../game/assets/audio/Vexento - Glow.mp3')
+    await soundController.loadSound('ambience', 'ambience');
+    await soundController.loadSound('fire', 'fire');
+    await soundController.loadSound('pick-up', 'pick-up');
+    await soundController.loadSound('stone-sliding', 'stone-sliding');
+    await soundController.loadSound('death', 'death');
+    await soundController.loadSound('footsteps', 'footsteps');
+    await soundController.loadSound('jump', 'jump');
+    await soundController.loadSound('double-jump', 'double-jump');
+    await soundController.loadSound('achievement', 'achievement');
+    soundController.loaded = true;
 }

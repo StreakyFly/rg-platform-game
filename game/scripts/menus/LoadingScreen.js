@@ -9,21 +9,22 @@ export function hideLoadingScreen() {
 export function updateLoading() {
     let i = 0;
     document.getElementById("nameInput").style.display = "block";
-    if (i == 0) {
+    if (i === 0) {
         i = 1;
-        var elem = document.getElementById("loadingBar");
-        var width = 0;
-        var id = setInterval(frame, 80);
+        let elem = document.getElementById("loadingBar");
+        let width = 0;
+        const id = setInterval(frame, 25);
+
         function frame() {
             if (width >= 62) {
                 clearInterval(id);
-                elem.innerHTML = "100%";
+                elem.innerHTML = "100 %";
                 i = 0;
             } else {
                 width += 2;
                 elem.style.width = width + "%";
-                var displayPercentage = Math.round((width / 62) * 100);
-                elem.innerHTML = displayPercentage + "%";
+                let displayPercentage = Math.round((width / 62) * 100);
+                elem.innerHTML = displayPercentage + " %";
             }
         }
     }
@@ -31,8 +32,10 @@ export function updateLoading() {
 
 export let clickedPlay = false;
 export function checkName() {
+    document.removeEventListener('click', checkName);
+
     const playerName = document.getElementById('name').value;
-    
+
     if (playerName.length <= 0) {
         return false;
     }

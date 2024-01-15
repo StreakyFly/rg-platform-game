@@ -13,7 +13,7 @@ export function startClock() {
     let time = '00:00';
     clock.textContent = time;
     setInterval(function () {
-        if (timeRunning && !pause && document.getElementById('endGame-menu').style.display != 'block') {
+        if (timeRunning && !pause && document.getElementById('endGame-menu').style.display !== 'block') {
             seconds++;
             if (seconds === 60) {
                 seconds = 0;

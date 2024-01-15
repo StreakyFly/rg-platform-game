@@ -15,7 +15,9 @@ export function toggleSettings() {
     renderLight.checked = getRenderLight();
     updateMouseSensitivityValue(document.getElementById('mouseSensitivity').value);
     updateVolumeValue(document.getElementById('volume').value);
-    soundController.setGlobalVolume(volume.value);
+    if (soundController !== null) {
+        soundController.setGlobalVolume(volume.value);
+    }
 }
 
 export function saveSettings() {
@@ -27,21 +29,23 @@ export function saveSettings() {
 }
 
 export function getMouseSensitivity() {
-    if (localStorage.getItem('mouseSensitivity') === null) {
+    const volume = parseInt(localStorage.getItem('mouseSensitivity'));
+    if (isNaN(volume) || volume == null) {
         localStorage.setItem('mouseSensitivity', "50");
     }
-    return parseInt(localStorage.getItem('mouseSensitivity'));
+    return volume;
 }
 
 export function getVolume() {
-    if (localStorage.getItem('volume') === null) {
-        localStorage.setItem('volume', "false");
+    const volume = parseInt(localStorage.getItem('volume'));
+    if (isNaN(volume) || volume == null) {
+        localStorage.setItem('volume', "50");
     }
-    return parseInt(localStorage.getItem('volume'));
+    return volume;
 }
 
 export function getRenderLight() {
-    if (localStorage.getItem('renderLight') === null) {
+    if (localStorage.getItem('renderLight') == null) {
         localStorage.setItem('renderLight', "true");
     }
     return stringToBool(localStorage.getItem('renderLight'));

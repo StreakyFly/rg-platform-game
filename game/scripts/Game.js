@@ -9,7 +9,7 @@ import {
     Transform,
 } from '../../common/engine/core.js';
 
-import { pause, soundController } from '../../main.js';
+import { mouseSensitivity, pause, soundController } from '../../main.js';
 
 import { JSONLoader } from '../../common/engine/loaders/JSONLoader.js';
 import { ImageLoader } from '../../common/engine/loaders/ImageLoader.js';
@@ -21,16 +21,15 @@ import { calculateAxisAlignedBoundingBox, mergeAxisAlignedBoundingBoxes } from '
 import { UnlitRenderer } from './renderers/UnlitRenderer.js';
 import { Renderer } from './renderers/Renderer.js';
 
-import { Physics } from './Physics.js';
-
 // import { Player } from './DEBUG_Player.js';
 import { Player } from './Player.js';
-
+import { Physics } from './Physics.js';
 import { Entity } from './entities/Entity.js';
 import { OrbHolder } from './entities/OrbHolder.js';
 import { Orb } from './entities/Orb.js';
 import { RespawnPoint } from './entities/RespawnPoint.js';
 import { Light } from './entities/Light.js';
+
 
 export class Game {
     constructor(improvedRenderer = true) {
@@ -45,6 +44,7 @@ export class Game {
         this.checkPointMap = new Map();
         this.OnRespawnMovingObjectNodes = [];
         this.player = null;
+        this.loader = new GLTFLoader();
         this.orbHolderMap = new Map();
         this.orbArray = [];
         this.unlockableDoorArray = [];
@@ -56,116 +56,21 @@ export class Game {
     }
 
     async start() {
-        const loader = new GLTFLoader();
-        await loader.load('../../game/assets/models/level.gltf');
+        await this.loader.load('../../game/assets/models/level.gltf');
 
-        this.scene = loader.loadScene(loader.defaultScene);
+        this.scene = this.loader.loadScene(this.loader.defaultScene);
 
-        this.assignObjects(loader);
-        this.initCamera(loader);
-        this.initPlayer(loader);
+        this.assignObjects();
+        this.initCamera();
+        this.initPlayer();
         this.initPlayerLight();
+        // this.initLights();
+        await this.initTextures();
         await this.initSky();
 
-        this.createLights(15);
+        this.createLights(17);
 
-
-        const black = new ImageData(new Uint8ClampedArray([0, 0, 0, 255]), 1, 1);
-        const white = new ImageData(new Uint8ClampedArray([255, 255, 255, 255]), 1, 1);
-        const orange = new ImageData(new Uint8ClampedArray([255, 60, 0, 255]), 1, 1);
-        const blue = new ImageData(new Uint8ClampedArray([0, 0, 255, 255]), 1, 1);
-
-        const emissionTexture = new Texture({
-            image: black,
-            sampler: new Sampler({
-                minFilter: 'nearest',
-                magFilter: 'nearest',
-            }),
-        });
-
-        const emissionTextureOrange = new Texture({
-            image: orange,
-            sampler: new Sampler({
-                minFilter: 'nearest',
-                magFilter: 'nearest',
-            }),
-        });
-
-        const emissionTextureBlue = new Texture({
-            image: blue,
-            sampler: new Sampler({
-                minFilter: 'nearest',
-                magFilter: 'nearest',
-            }),
-        });
-
-        const lightTexture = new Texture({
-            image: white,
-            sampler: new Sampler({
-                minFilter: 'nearest',
-                magFilter: 'nearest',
-            }),
-        });
-
-        this.scene.traverse(node => {
-            const model = node.getComponentOfType(Model);
-            if (!model) {
-                return;
-            }
-
-            const entity = node.getComponentOfType(Entity);
-            if (entity) {
-                entity.player = this.player.getComponentOfType(Player);
-            }
-
-            node.isStatic = true;
-
-            model.primitives[0].material.emissionTexture = emissionTexture;
-            model.primitives[0].material.metalnessTexture = lightTexture  // TODO set this in Blender instead!
-            model.primitives[0].material.roughnessTexture = lightTexture  // TODO set this in Blender instead!
-        });
-
-        this.player.isStatic = false;
-        this.player.isDynamic = true;
-
-
-        const emissionTextureCheckPoint = new Texture({
-            image: await new ImageLoader().load('../../game/assets/models/portal.png'),
-            sampler: new Sampler({
-                minFilter: 'nearest',
-                magFilter: 'nearest',
-            }),
-        });
-
-
-        const lavaMat = loader.loadMaterial("LavaMat");
-        const portalMat = loader.loadMaterial("PortalMat");
-        for (let i = 0; i < loader.gltf.nodes.length; i++) {
-            if (this.scene.children[i] !== undefined) {
-                const material = this.scene.children[i].getComponentOfType(Model).primitives[0].material;
-
-                if (material === lavaMat) {
-                    material.emissionTexture = emissionTextureOrange;
-                }
-
-                else if (material === portalMat) {
-                    material.emissionTexture = emissionTextureBlue;
-                }
-                /*
-                if (blendObject.name.includes("CheckPoint")) {
-                    console.log(blendObject.name);
-                    blendObjectModel.primitives[0].material.emissionTexture = emissionTextureCheckPoint;
-                }
-
-                if (blendObject.name.includes("Orb_")) {
-                    console.log(blendObject.name);
-                    blendObjectModel.primitives[0].material.emissionTexture = emissionTextureBlue;
-                }*/
-
-            }
-        }
-
-        // assign checkPoints into array based on their porper index order
+        // assign checkPoints into array based on their proper index order
         for (let i = 0; i < this.checkPointMap.size; i++) {
             this.player.getComponentOfType(Player).checkPoints[i] = this.checkPointMap.get(i);
         }
@@ -209,28 +114,73 @@ export class Game {
             [0, 255, 0],
             [0, 0, 255],
             [255, 255, 0],  // Yellow
-            [255, 0, 255],  // Magenta
-            [0, 255, 255],  // Cyan
+            [200, 0, 200],  // Magenta
+            [0, 200, 200],  // Cyan
         ];
 
         for (let i = 0; i < n; i++) {
             for (let j = 0; j < 3; j++) {
                 const light = new Node();
 
+                let intensity = 4;
                 const translation = [j * 3 - 3, 2, -2 * i];
+                if (translation[2] >= -16) {
+                    translation[1] = 1.8;
+                    if (translation[2] < -8) {
+                        intensity = 0.8;
+                    } else {
+                        intensity = 2;
+                    }
+                    if (translation[0] !== 0 && translation[2] < -8) {
+                        continue;
+                    }
+                    if (translation[2] === -16) {
+                        translation[2] = -15.5;
+                    }
+                }
                 light.addComponent(new Transform({
                     translation: translation,
                 }));
 
                 const newLight = new Light({
-                    color: colors[(i * 3 + j) % colors.length],  // Assign a different color to each light
-                    intensity: 2,
+                    color: colors[(i * 3 + j) % colors.length],  // assign a different color to each light
+                    intensity: intensity,
                     attenuation: [0.001, 0, 0.1]
                 });
 
                 light.addComponent(newLight);
 
                 this.lights.push(light);
+            }
+        }
+    }
+
+    initLights() {
+        const orange = [255, 60, 0];
+
+        for (let i = 0; i < this.loader.gltf.nodes.length; i++) {
+            if (this.scene.children[i] !== undefined) {
+                const blendObject = this.loader.gltf.nodes[i];
+
+                if (blendObject.name.includes("Torch")) {
+                    console.log(blendObject.name, blendObject.translation);
+                    const light = new Node();
+
+                    const translation = blendObject.translation;
+                    light.addComponent(new Transform({
+                        translation: translation,
+                    }));
+
+                    const newLight = new Light({
+                        color: orange,
+                        intensity: 0.5,
+                        attenuation: [0.001, 0, 0.1]
+                    });
+
+                    light.addComponent(newLight);
+
+                    this.lights.push(light);
+                }
             }
         }
     }
@@ -252,8 +202,8 @@ export class Game {
         this.lights.push(light);
     }
 
-    initCamera(loader) {
-        this.camera = loader.loadNode('Camera');
+    initCamera() {
+        this.camera = this.loader.loadNode('Camera');
         // this.camera.addComponent(new Transform({
         //     translation: [0, 1, 0],
         // }));
@@ -263,11 +213,10 @@ export class Game {
         this.camera.getComponentOfType(Camera).aspect = 0.6;  // 0.3 / 0.5;
     }
 
-    initPlayer(loader) {
-        this.player = loader.loadNode('PlayerCollisionBody');
-        // this.player = loader.loadNode('Player');
+    initPlayer() {
+        this.player = this.loader.loadNode('PlayerCollisionBody');
         const playerTransform = this.player.getComponentOfType(Transform);
-        this.player.addComponent(new Player(playerTransform, this.camera, this.player, this.OnRespawnMovingObjectNodes, this.canvas));
+        this.player.addComponent(new Player(playerTransform, this.camera, this.player, this.OnRespawnMovingObjectNodes, this.canvas, Math.min(mouseSensitivity/100, 1.0)));
         this.player.isDynamic = true;
         this.player.aabb = {
             min: [-0.2, -0.2, -0.2],
@@ -281,10 +230,10 @@ export class Game {
         this.scene.addChild(this.player);
     }
 
-    assignObjects(loader) {
+    assignObjects() {
         // assign gameObject roles
-        for (let i = 0; i < loader.gltf.nodes.length; i++) {
-            const blendObject = loader.gltf.nodes[i];
+        for (let i = 0; i < this.loader.gltf.nodes.length; i++) {
+            const blendObject = this.loader.gltf.nodes[i];
             const blendObjectNode = this.scene.children[i]
 
             // assign playerModelObjects
@@ -321,7 +270,8 @@ export class Game {
             // assign orbHolders
             if (blendObject.name.includes("OrbHolder")) {
                 const orbHolderNum = blendObject.name.split("")[blendObject.name.length - 1];
-                const orbHolder = new OrbHolder(blendObjectNode.getComponentOfType(Transform));
+                const orbHolder = new OrbHolder(blendObjectNode.getComponentOfType(Transform), this.loader);
+                orbHolder.node = blendObjectNode;
                 orbHolder.orbDropEnabled = blendObject.name.includes("Drop");
                 blendObjectNode.addComponent(orbHolder);
                 this.orbHolderMap.set(orbHolderNum, blendObjectNode)
@@ -376,7 +326,7 @@ export class Game {
                 else if (blendObject.name.includes("CHASETRAP")) {
                     maxTranslationDistance = 30;
                     movingObjectTranslation = [0, 0, -1];
-                    velocity = 1;
+                    velocity = 1.4;
                 }
 
                 if (blendObject.name.includes("MovingOnSpawn")) {
@@ -449,13 +399,116 @@ export class Game {
             const boxes = model.primitives.map(primitive => calculateAxisAlignedBoundingBox(primitive.mesh));
             node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
         });
+
+        this.initSounds();
+    }
+
+    initSounds() {
+        if (!soundController.loaded) {
+            setTimeout(() => this.initSounds(), 100);
+            return;
+        }
+
+        let torchInstance = 0;
+        for (let i = 0; i < this.loader.gltf.nodes.length; i++) {
+            if (this.scene.children[i] !== undefined) {
+                const blendObject = this.loader.gltf.nodes[i];
+                if (blendObject.name.includes("Torch")) {
+                    const delay = Math.random() * 3000  // delay for up to 3 seconds
+                    setTimeout(() => {
+                        soundController.playSound('fire', { loop: true });
+                        soundController.updateSoundPosition('fire', torchInstance, ...blendObject.translation);
+                        soundController.setVolume('fire', 75);
+                        torchInstance++;
+                    }, delay);
+                }
+            }
+        }
+    }
+
+    async initTextures() {
+        const black = new ImageData(new Uint8ClampedArray([0, 0, 0, 255]), 1, 1);
+        const white = new ImageData(new Uint8ClampedArray([255, 255, 255, 255]), 1, 1);
+        const orange = new ImageData(new Uint8ClampedArray([255, 60, 0, 255]), 1, 1);
+        const blue = new ImageData(new Uint8ClampedArray([0, 0, 255, 255]), 1, 1);
+        const sampler = new Sampler({
+            minFilter: 'nearest',
+            magFilter: 'nearest',
+        })
+
+        const emissionTexture = new Texture({ image: black, sampler: sampler });
+        const emissionTextureOrange = new Texture({ image: orange, sampler: sampler });
+        const emissionTextureBlue = new Texture({ image: blue, sampler: sampler });
+        const lightTexture = new Texture({ image: white, sampler: sampler });
+
+        this.scene.traverse(node => {
+            const model = node.getComponentOfType(Model);
+            if (!model) {
+                return;
+            }
+
+            const entity = node.getComponentOfType(Entity);
+            if (entity) {
+                entity.player = this.player.getComponentOfType(Player);
+            }
+
+            node.isStatic = true;
+
+            model.primitives[0].material.emissionTexture = emissionTexture;
+            model.primitives[0].material.metalnessTexture = lightTexture
+            model.primitives[0].material.roughnessTexture = lightTexture
+            model.primitives[0].material.metalnessFactor = 1;
+            model.primitives[0].material.roughnessFactor = 0.6;
+        });
+
+        this.player.isStatic = false;
+        this.player.isDynamic = true;
+
+        const emissionTexturePortal = new Texture({
+            image: await new ImageLoader().load('../../game/assets/models/portal.png'),
+            sampler: new Sampler({
+                minFilter: 'nearest',
+                magFilter: 'nearest',
+            }),
+        });
+
+        const lavaMat = this.loader.loadMaterial("LavaMat");
+        const portalMat = this.loader.loadMaterial("PortalMat");
+        const trapDarkMat = this.loader.loadMaterial("DarkStoneTrapMat");
+        const magmaMat = this.loader.loadMaterial("MagmaMat");
+        for (let i = 0; i < this.loader.gltf.nodes.length; i++) {
+            if (this.scene.children[i] !== undefined) {
+                // const blendObject = this.loader.gltf.nodes[i];
+                // const blendObjectModel = this.scene.children[i].getComponentOfType(Model);
+                const material = this.scene.children[i].getComponentOfType(Model).primitives[0].material;
+
+                switch (material) {
+                    case trapDarkMat:
+                        material.metalnessFactor = 0.7;
+                        material.roughnessFactor = 0.2;
+                        break;
+                    case lavaMat:
+                        material.emissionTexture = emissionTextureOrange;
+                        break;
+                    case magmaMat:
+                        material.emissionTexture = emissionTextureBlue;
+                        break;
+                    case portalMat:
+                        material.emissionTexture = emissionTexturePortal;
+                        break;
+                }
+
+                // if (blendObject.name.includes("Orb_")) {
+                //     console.log(blendObject.name);
+                //     blendObjectModel.primitives[0].material.emissionTexture = emissionTextureBlue;
+                // }
+            }
+        }
     }
 
     async initSky() {
-        const [cubeMesh, modelMesh, baseImage, envmapImage] = await Promise.all([
+        const [cubeMesh, envmapImage] = await Promise.all([
             new JSONLoader().loadMesh('../../../common/models/cube.json'),
-            new JSONLoader().loadMesh('../../../common/models/bunny.json'),
-            new ImageLoader().load('../../game/assets/images/grayscale.png'),
             new ImageLoader().load('../../game/assets/images/sky.jpg'),
         ]);
 

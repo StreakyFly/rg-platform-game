@@ -38,7 +38,7 @@ export class Entity {
     }
 
     move(dt) {
-        dt = 0.01;
+        dt = 0.01;  // TODO delete
         // update translation direction
         let posX = this.transform.translation[0];
         let posY = this.transform.translation[1];

@@ -53,13 +53,13 @@
         <h1>Settings</h1>
         <div class="setting">
           <label for="mouseSensitivity">Mouse Sensitivity:</label>
-          <input type="range" id="mouseSensitivity" name="sensitivity" min="0" max="100">
+          <input type="range" id="mouseSensitivity" name="sensitivity" min="0" max="100" value="50">
           <span id="mouseSensitivityValue">?%</span>
           <br><br>
         </div>
         <div class="setting">
           <label for="volume">Audio Volume:</label>
-          <input type="range" id="volume" name="volume" min="0" max="100">
+          <input type="range" id="volume" name="volume" min="0" max="100" value="50">
           <span id="volumeValue">?%</span>
           <br><br>
         </div>
@@ -77,16 +77,15 @@
   <div id="loadingScreen" style="display:none;">
     <div id="nameInput" style="display: none;">
       <div id="nameStuff">
-        <label id="nameText" for="name">Greetings traveler, what is your name?</label>
+        <label id="nameText" for="name">Greetings adventurer, what is your name?</label>
         <br>
         <input type="text" id="name" name="name" placeholder="Your name...">
         <br>
         <button id="play">Play</button>
       </div>
     </div>
-
     <div id="loadingContent">
-      <div id="loadingBar">10%</div>
+      <div id="loadingBar">10 %</div>
     </div>
   </div>
 
@@ -96,6 +95,7 @@
     <div>To resume <b>click</b> anywhere on the screen</div>
   </div>
 
+  <!--endgame menu-->
   <div id="endGame-menu" class="fullscreen overlay" style="display:none;">
     <div><b>Congratulations!</b></div>
     <div id="endData">You escaped the castle in xx:xx and died x times!</div>

@@ -1,20 +1,25 @@
 import { Orb } from './Orb.js';
 import { showBottomText } from "../controllers/HUDController.js";
+import { soundController } from "../../../main.js";
+import { Texture } from "../../../common/engine/core/Texture.js";
+import { Sampler } from "../../../common/engine/core/Sampler.js";
+import {Model} from "../../../common/engine/core/Model.js";
 
 
 export class OrbHolder {
     orb = null;
     unlockDoor = null;
-    constructor(transform) {
+    constructor(transform, loader) {
         this.transform = transform;
+        this.loader = loader;
         this.detectionRadius = 1.5;
-
 
         const maxHeightDist = 1.5;
         this.minHeightDetection = this.transform.translation[1] - maxHeightDist / 2;
         this.maxHeightDetection = this.transform.translation[1] + maxHeightDist / 2;
 
         this.interactionDisabled = false;
+        this.node = null;
     }
 
     isInteractionRangeValid(playerTranslation, cameraQuaternion) {
@@ -77,8 +82,8 @@ export class OrbHolder {
     }
 
     collectOrb(collectedOrbArray) {
-        // collect orb: move away from any visible sight -> positon [0, 0, 40] is out of sight
-        this.orb.getComponentOfType(Orb).transform.translation = [0, 0, 40]
+        // collect orb: move away from any visible sight -> positon [0, 0, -40] is out of sight
+        this.orb.getComponentOfType(Orb).transform.translation = [0, 0, -40]
 
         collectedOrbArray.push(this.orb);
 
@@ -86,6 +91,9 @@ export class OrbHolder {
         this.interactionDisabled = true;
 
         this.updateInventory(collectedOrbArray);
+
+        soundController.playSound('pick-up', { globalSound: true });
+        soundController.setVolume('pick-up', 60);
         showBottomText("Energy Orb collected.", 'orange');
     }
 
@@ -103,13 +111,26 @@ export class OrbHolder {
             orbNode.getComponentOfType(Orb).transform.translation[1] += 0.5;
         }
 
+        this.applyBloomTexture();
+
+        soundController.playSound('achievement', { globalSound: true });
+        soundController.setVolume('achievement', 90);
+
         showBottomText(collectedOrbArray.length + " Energy Orb" + ((collectedOrbArray.length > 1) ? "s were" : " was") + " placed.", 'orange');
 
         // clear array
         collectedOrbArray.length = 0;
 
-        this.unlockDoor.movingEnabled = true;
-        this.unlockDoor.moveUnlocked = true;
+        setTimeout(() => {
+            this.unlockDoor.movingEnabled = true;
+            this.unlockDoor.moveUnlocked = true;
+            soundController.playSound('stone-sliding', { globalSound: true });
+            soundController.setVolume('stone-sliding', 80);
+            setTimeout(() => {
+                soundController.playSound('stone-sliding', { globalSound: true });
+                soundController.setVolume('stone-sliding', 80);
+            }, 800);
+        }, 800);
 
         this.updateInventory(collectedOrbArray);
     }
@@ -120,5 +141,18 @@ export class OrbHolder {
         if (inventoryCount) {
             inventoryCount.textContent = "x " + parseInt(collectedOrbArray.length);
         }
+    }
+
+    applyBloomTexture() {
+        const orange = new ImageData(new Uint8ClampedArray([255, 60, 0, 255]), 1, 1);
+        const emissionTextureOrange = new Texture({
+            image: orange,
+            sampler: new Sampler({
+                minFilter: 'nearest',
+                magFilter: 'nearest',
+            }),
+        });
+
+        this.node.getComponentOfType(Model).primitives[0].material.emissionTexture = emissionTextureOrange;
     }
 }

@@ -12,6 +12,8 @@ import { interactionText,
     startClock,
 } from "./controllers/HUDController.js";
 
+import { endGame, isLoadingActive, soundController } from "../../main.js";
+
 
 const cameraView = {
     "3D": "3d",
@@ -73,6 +75,8 @@ export class Player {
         this.killYMax = 21;
 
         this.moveWithPlatformTranslation = [0, 0, 0];
+        this.wasWalking = false;
+        this.isWalking = false;
 
         this.deaths = 0;
 
@@ -116,6 +120,7 @@ export class Player {
     }
 
     update(t, dt) {
+        if (isLoadingActive) return;
         // calculate forward and right vectors.
         const cos = Math.cos(this.yaw);
         const sin = Math.sin(this.yaw);
@@ -125,6 +130,9 @@ export class Player {
         // map user input to the acceleration vector.
         this.isMoving = true;
         this.moveWithPlatformTranslation = [0, 0, 0];
+
+        this.isWalking = !(this.velocity[0] === 0 && this.velocity[1] === 0 && this.velocity[2] === 0);
+        this.playWalkingSound();
 
         const acc = vec3.create();
         if (this.keys['KeyW']) {
@@ -220,7 +228,7 @@ export class Player {
             this.playerCamera.getComponentOfType(Transform).rotation = rotation;
         }
 
-        if (this.isOnObject()) {
+        if (this.isOnAnyObject()) {
             vec3.scaleAndAdd(this.playerTransform.translation, this.playerTransform.translation, this.moveWithPlatformTranslation, dt);
         }
 
@@ -239,6 +247,8 @@ export class Player {
     }
 
     showDeathScreen() {
+        soundController.playSound('death', { globalSound: true, restart: true });
+        soundController.setVolume('death', 80);
         showTopText("You died...", 'red', 'black', 2);
     }
 
@@ -258,7 +268,7 @@ export class Player {
             node.getComponentOfType(Entity).movingEnabled = node.getComponentOfType(Entity).movingSinceCheckPoint <= this.currCheckPointIndex;
         }
         // change view
-        if (this.currCheckPointIndex === 4 || this.currCheckPointIndex === 2) {
+        if (this.currCheckPointIndex === 4) {
             this.changeTo2D();
         }
         else {
@@ -268,6 +278,12 @@ export class Player {
 
     checkForNewCheckpoint(object) {
         if (!object.checkPointIndex) return;
+
+        if (this.currCheckPointIndex === 5) {
+            setTimeout(() => {
+                endGame(this.deaths);
+            }, 1000);
+        }
 
         if (object.checkPointIndex > this.currCheckPointIndex) {
             // new checkpoint reached
@@ -282,7 +298,7 @@ export class Player {
 
     handleJump(dt) {
         dt = Math.min(dt, 0.15);
-        if (this.isOnObject()) {
+        if (this.isOnAnyObject()) {
             this.velocityY = 0;
             // if onObject and isJumping, then reset all jump parameters
             if (this.isJumping) {
@@ -290,6 +306,13 @@ export class Player {
                 this.isDoubleJumping = false;
             }  // else if onObject and attemptJump but not isJumping, then jump
             else if (this.attemptJump && !this.isJumping) {
+                if (Math.random() > 0.6) {
+                    soundController.playSound('jump', { loop: false, globalSound: true });
+                    soundController.setVolume('jump', 75);
+                } else {
+                    soundController.playSound('double-jump', { loop: false, globalSound: true });
+                    soundController.setVolume('double-jump', 75);
+                }
                 this.isJumping = true;
                 this.velocityY = this.jumpVelocity;
             }
@@ -299,6 +322,8 @@ export class Player {
             if (this.isJumping && this.attemptDoubleJump && !this.isDoubleJumping && !this.attemptJump) {
                 this.isDoubleJumping = true;
                 this.velocityY = this.doubleJumpVelocity;
+                soundController.playSound('double-jump', { loop: false, globalSound: true });
+                soundController.setVolume('double-jump', 75);
             }
             this.velocityY += this.gravity * dt;
 
@@ -338,7 +363,7 @@ export class Player {
                     this.respawn();
                 }
 
-                if (object.isEntityPlatform) {
+                if (object.isEntityPlatform) { //} && !this.isOnObject(object)) {
                     this.thisMovingPlatform = object.getComponentOfType(Entity);
                     this.thisMovingPlatform.movePlayer = true;
                 }
@@ -348,33 +373,37 @@ export class Player {
                     this.respawn();
                 }
 
-                if (object.isStairs && this.isMoving) {
+                if (object.isStairs && this.isMoving && !this.isOnObject(object)) {
                     // move up the stairs
-                    const stairsMovementVelocityY = 0.02;
+                    const stairsMovementVelocityY = 0.025;
                     this.playerTransform.translation[1] += stairsMovementVelocityY;
                 }
             }
         }
     }
 
-    isOnObject() {
+    isOnAnyObject() {
         const player = this.node;
         for (const object of this.node.parent.children) {
             if (object.aabb === undefined || object === this.node) continue;
 
             if (this.checkCollision(player, object)) {
 
-                if (this.velocityY > 0) {
-                    return false;
-                }
-
-                const distanceBetweenPlayersBottomAndObjectsTop = this.physics.getTransformedAABB(object).max[1] - this.playerTransform.translation[1];
-                if (this.spiderManJump || Math.abs(distanceBetweenPlayersBottomAndObjectsTop) < 0.015) {  // Math.abs not necessary afaik (wasn't tested without though)
-                    return true;
-                }
+                return this.isOnObject(object);
             }
         }
         return false;
+    }
+
+    isOnObject(object) {
+        if (this.velocityY > 0) {
+            return false;
+        }
+
+        const distanceBetweenPlayersBottomAndObjectsTop = this.physics.getTransformedAABB(object).max[1] - this.playerTransform.translation[1];
+        if (this.spiderManJump || Math.abs(distanceBetweenPlayersBottomAndObjectsTop) < 0.015) {  // Math.abs not necessary afaik (wasn't tested without though)
+            return true;
+        }
     }
 
     checkCollision(a, b) {
@@ -384,6 +413,18 @@ export class Player {
 
         // check if there is collision.
         return this.physics.aabbIntersection(aBox, bBox);
+    }
+
+    playWalkingSound() {
+        if (this.isWalking && this.velocityY === 0) {
+            soundController.playSound('footsteps', { loop: true, globalSound: true, singleInstance: true });
+            // soundController.setVolume('footsteps', 50);
+            this.wasWalking = true;
+            this.isWalking = false;
+        } else if (this.wasWalking) {
+            soundController.stopPlaying('footsteps');
+            this.wasWalking = false;
+        }
     }
 
     pointermoveHandler(e) {

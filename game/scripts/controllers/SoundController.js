@@ -1,65 +1,119 @@
 export class SoundController {
+    loaded = false;
     constructor() {
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         this.globalVolume = 0.5;
-        this.sounds = {};
+        this.sounds = {}; // sound buffers
+        this.soundInstances = {}; // instances of playing sounds
         this.listener = this.audioContext.listener;
     }
 
-    async loadSound(id, url) {
-        const response = await fetch(url);
+    async loadSound(id, name) {
+        const response = await fetch(this.getSoundUrl(name));
         const arrayBuffer = await response.arrayBuffer();
         const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
         this.sounds[id] = audioBuffer;
     }
 
+    getSoundUrl(name) {
+        return `../../game/assets/audio/${name}.mp3`;
+    }
+
     playSound(id, options = {}) {
-        const sound = this.sounds[id];
-        if (!sound) {
-            console.warn(`Sound with ID ${id} not found.`);
+        const soundBuffer = this.sounds[id];
+        if (!soundBuffer) {
+            console.warn(`Sound buffer with ID ${id} not found.`);
             return;
         }
 
         // Can the sound be played multiple times at once?
-        if (options.singleInstance && sound.source && !sound.source.ended) {
-            // // restart the sound
-            // sound.source.stop();
-            // keep the current instance playing
-            return sound.source;
+        if (options.singleInstance && this.soundInstances[id] && this.soundInstances[id].length > 0) {
+            const existingInstance = this.soundInstances[id][0];
+            if (existingInstance.source && !existingInstance.source.ended) {
+                if (options.restart) {
+                    existingInstance.source.stop();
+                } else {
+                    return existingInstance;
+                }
+            }
         }
 
         const source = this.audioContext.createBufferSource();
         const gainNode = this.audioContext.createGain();
-        const panner = this.audioContext.createPanner();
+        let panner = null;
 
-        panner.panningModel = 'HRTF';
-        panner.distanceModel = 'inverse';
-        panner.refDistance = 1;
-        panner.maxDistance = 10000;
-        panner.rolloffFactor = 1;
-
-        source.buffer = sound;
+        source.buffer = soundBuffer;
         source.loop = options.loop || false;
-        source.connect(panner).connect(gainNode);
         gainNode.gain.value = this.globalVolume;
-        gainNode.connect(this.audioContext.destination);
 
+        if (options.globalSound) {
+            // for global sound, connect directly to gainNode without spatialization
+            source.connect(gainNode);
+        } else {
+            // for spatialized sound, use a panner
+            panner = this.audioContext.createPanner();
+            panner.panningModel = 'HRTF';
+            panner.distanceModel = 'inverse';
+            panner.refDistance = 1;
+            panner.maxDistance = 10000;
+            panner.rolloffFactor = 1;
+            source.connect(panner).connect(gainNode);
+        }
+
+        gainNode.connect(this.audioContext.destination);
         source.start(0);
 
-        // Store sound data with the new source, gainNode, and panner
-        this.sounds[id] = { buffer: source.buffer, source, gainNode, panner };
+        // create instance and store in array
+        if (!this.soundInstances[id]) {
+            this.soundInstances[id] = [];
+        }
 
-        return { source, gainNode, panner };
+        const instance = {source, gainNode, panner: options.globalSound ? null : panner};
+        this.soundInstances[id].push(instance);
+
+        return instance;
     }
 
-    updateSoundPosition(id, x, y, z) {
-        if (this.sounds[id] && this.sounds[id].panner) {
-            const panner = this.sounds[id].panner;
-            panner.positionX.setValueAtTime(x, this.audioContext.currentTime);
-            panner.positionY.setValueAtTime(y, this.audioContext.currentTime);
-            panner.positionZ.setValueAtTime(z, this.audioContext.currentTime);
+    stopPlaying(id, all = false, exceptions = []) {
+        if (all) {
+            Object.keys(this.soundInstances).forEach(soundId => {
+                if (!exceptions.includes(soundId)) {
+                    this.stopInstances(soundId);
+                }
+            });
         } else {
-            console.error(`Panner not found for sound ID ${id}`);
+            this.stopInstances(id);
+        }
+    }
+
+    stopInstances(id) {
+        const instances = this.soundInstances[id];
+        if (instances && instances.length > 0) {
+            instances.forEach(instance => {
+                if (instance.source) {
+                    instance.source.stop();
+                }
+            });
+            this.soundInstances[id] = [];
+        } else {
+            console.warn(`No instances found for sound ID ${id} to stop.`);
+        }
+    }
+
+
+    updateSoundPosition(id, index, x, y, z) {
+        const instanceArray = this.soundInstances[id];
+        if (instanceArray && instanceArray.length > index) {
+            const instance = instanceArray[index];
+            if (instance && instance.panner) {
+                instance.panner.positionX.setValueAtTime(x, this.audioContext.currentTime);
+                instance.panner.positionY.setValueAtTime(y, this.audioContext.currentTime);
+                instance.panner.positionZ.setValueAtTime(z, this.audioContext.currentTime);
+            } else {
+                console.warn(`Panner not found for sound ID ${id} at index ${index}`);
+            }
+        } else {
+            console.warn(`Instance array not found or index out of range for sound ID ${id}`);
         }
     }
 
@@ -92,21 +146,29 @@ export class SoundController {
     }
 
     setVolume(id, volume) {
-        if (this.sounds[id] && this.sounds[id].gainNode) {
-            const gainNode = this.sounds[id].gainNode;
-            gainNode.gain.value = Math.min(Math.max(volume / 100, 0), 1);
-            console.log(id, gainNode.gain.value);
+        const scaledVolume = Math.min(Math.max(volume / 100, 0), 1);
+        const instances = this.soundInstances[id];
+        if (instances) {
+            instances.forEach(instance => {
+                if (instance.gainNode) {
+                    instance.gainNode.gain.value = scaledVolume * this.globalVolume;
+                }
+            });
         } else {
-            console.warn(`Gain node not found for sound ID ${id}`);
+            console.warn(`No instances found for sound ID ${id}`);
         }
     }
 
     setGlobalVolume(volume) {
         const scaledVolume = Math.min(Math.max(volume / 100, 0), 1);
-        Object.values(this.sounds).forEach(sound => {
-            if (sound.gainNode) {
-                sound.gainNode.gain.value = scaledVolume;
-            }
+        this.globalVolume = scaledVolume;
+
+        Object.values(this.soundInstances).forEach(instances => {
+            instances.forEach(instance => {
+                if (instance.gainNode) {
+                    instance.gainNode.gain.value = scaledVolume;
+                }
+            });
         });
     }
 
