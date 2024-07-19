@@ -6,13 +6,8 @@ export class Entity {
         this.translation = translation;
         this.moveBothDirections = moveBothDirections;
         this.movingSinceCheckPoint = movingSinceCheckPoint;
-        this.movingEnabled = movingSinceCheckPoint == 0;
-        this.minX = this.startPos[0] - maxDistance;
-        this.maxX = this.startPos[0] + maxDistance;
-        this.minY = this.startPos[1] - maxDistance;
-        this.maxY = this.startPos[1] + maxDistance;
-        this.minZ = this.startPos[2] - maxDistance;
-        this.maxZ = this.startPos[2] + maxDistance;
+        this.movingEnabled = movingSinceCheckPoint === 0;
+        this.assignMaxDistance(maxDistance);
 
         this.velocity = velocity;
 
@@ -24,7 +19,7 @@ export class Entity {
         this.canMovePlayer = canMovePlayer;
     }
 
-    reasignMaxDistance(maxDistance) {
+    assignMaxDistance(maxDistance) {
         this.minX = this.startPos[0] - maxDistance;
         this.maxX = this.startPos[0] + maxDistance;
         this.minY = this.startPos[1] - maxDistance;
@@ -38,12 +33,11 @@ export class Entity {
     }
 
     move(dt) {
-        dt = 0.01;  // TODO delete
+        dt = 0.01;  // TODO delete and fix objects getting stuck sometimes (rarely) in one location for a while
         // update translation direction
         let posX = this.transform.translation[0];
         let posY = this.transform.translation[1];
         let posZ = this.transform.translation[2];
-
 
         if (posX >= this.maxX || posX <= this.minX) {
             this.updateTranslation(0);
@@ -56,8 +50,8 @@ export class Entity {
         if (posZ >= this.maxZ || posZ <= this.minZ) {
             this.updateTranslation(2);
         }
-        // move
 
+        // move
         vec3.scaleAndAdd(this.transform.translation, this.transform.translation, this.translation, this.velocity * dt);
 
         if (this.movePlayer && this.canMovePlayer) {
@@ -66,7 +60,7 @@ export class Entity {
     }
 
     updateTranslation(axisIndex) {
-        // moveUnlocked -> "fake animation" finished, therefore disable movement
+        // moveUnlocked -> "animation" finished, therefore disable movement
         if (this.moveUnlocked) {
             this.movingEnabled = false;
             return;

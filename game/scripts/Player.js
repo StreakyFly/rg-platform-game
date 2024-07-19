@@ -8,7 +8,6 @@ import { Entity } from './entities/Entity.js';
 import { interactionText,
     showBottomText,
     showTopText,
-    gameFinish,
     startClock,
 } from "./controllers/HUDController.js";
 
@@ -33,6 +32,7 @@ export class Player {
         this.domElement = domElement;
 
         this.mouseSensitivityMultiplier = mouseSensitivityMultiplier;
+        this.gameFinish = false;
 
         this.pointerSensitivity = pointerSensitivity;
 
@@ -120,7 +120,7 @@ export class Player {
     }
 
     update(t, dt) {
-        if (isLoadingActive) return;
+        if (isLoadingActive || this.gameFinish) return;
         // calculate forward and right vectors.
         const cos = Math.cos(this.yaw);
         const sin = Math.sin(this.yaw);
@@ -247,13 +247,13 @@ export class Player {
     }
 
     showDeathScreen() {
+        this.deaths++;
         soundController.playSound('death', { globalSound: true, restart: true });
         soundController.setVolume('death', 80);
         showTopText("You died...", 'red', 'black', 2);
     }
 
     respawn() {
-        this.deaths++;
         const checkpoint = this.checkPoints[this.currCheckPointIndex]
         this.playerTransform.translation = [...checkpoint.translation];
         this.yaw = checkpoint.yaw;
@@ -280,6 +280,7 @@ export class Player {
         if (!object.checkPointIndex) return;
 
         if (this.currCheckPointIndex === 5) {
+            this.gameFinish = true;
             setTimeout(() => {
                 endGame(this.deaths);
             }, 1000);
@@ -418,7 +419,6 @@ export class Player {
     playWalkingSound() {
         if (this.isWalking && this.velocityY === 0) {
             soundController.playSound('footsteps', { loop: true, globalSound: true, singleInstance: true });
-            // soundController.setVolume('footsteps', 50);
             this.wasWalking = true;
             this.isWalking = false;
         } else if (this.wasWalking) {
@@ -430,8 +430,8 @@ export class Player {
     pointermoveHandler(e) {
         if (this.view === cameraView['2D']) return;
 
-        const dy = e.movementY * this.mouseSensitivityMultiplier;
-        const dx = e.movementX * this.mouseSensitivityMultiplier;
+        const dy = e.movementY;
+        const dx = e.movementX;
         this.pitch -= dy * this.pointerSensitivity;
         this.yaw -= dx * this.pointerSensitivity;
 

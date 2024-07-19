@@ -85,6 +85,7 @@ export class Renderer extends BaseRenderer {
     render(scene, camera, skybox, lights) {
         this.renderGeometry(scene, camera);
         this.renderBright();
+        // this.renderToCanvas();
         this.renderBloom();
         this.renderSceneWithLights(scene, camera, skybox, lights);
         this.renderFinal();

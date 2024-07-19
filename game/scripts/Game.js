@@ -108,54 +108,55 @@ export class Game {
         new UpdateSystem({ update: this.update.bind(this), render: this.render.bind(this) }).start();
     }
 
-    createLights(n) {
-        const colors = [
-            [255, 0, 0],
-            [0, 255, 0],
-            [0, 0, 255],
-            [255, 255, 0],  // Yellow
-            [200, 0, 200],  // Magenta
-            [0, 200, 200],  // Cyan
-        ];
-
-        for (let i = 0; i < n; i++) {
-            for (let j = 0; j < 3; j++) {
-                const light = new Node();
-
-                let intensity = 4;
-                const translation = [j * 3 - 3, 2, -2 * i];
-                if (translation[2] >= -16) {
-                    translation[1] = 1.8;
-                    if (translation[2] < -8) {
-                        intensity = 0.8;
-                    } else {
-                        intensity = 2;
-                    }
-                    if (translation[0] !== 0 && translation[2] < -8) {
-                        continue;
-                    }
-                    if (translation[2] === -16) {
-                        translation[2] = -15.5;
-                    }
-                }
-                light.addComponent(new Transform({
-                    translation: translation,
-                }));
-
-                const newLight = new Light({
-                    color: colors[(i * 3 + j) % colors.length],  // assign a different color to each light
-                    intensity: intensity,
-                    attenuation: [0.001, 0, 0.1]
-                });
-
-                light.addComponent(newLight);
-
-                this.lights.push(light);
+    update(time, dt) {
+        if (pause) return;
+        this.scene.traverse(node => {
+            for (const component of node.components) {
+                component.update?.(time, dt);
             }
+        });
+        this.physics.update(time, dt);  // handle collisions
+        this.updateSoundParameters();
+    }
+
+    render() {
+        this.renderer.render(this.scene, this.camera, this.skybox, this.lights);
+        this.updateFPS();
+    }
+
+    resize({ displaySize: { width, height } }) {
+        this.camera.getComponentOfType(Camera).aspect = width / height;
+        if (this.renderer instanceof Renderer) {
+            this.renderer.resize(width, height);
         }
     }
 
+    updateSoundParameters() {
+        const playerTransform = this.player.getComponentOfType(Transform);
+        soundController.updateListenerPosition(...playerTransform.translation)
+        soundController.updateListenerOrientation(playerTransform.rotation);
+    }
+
+    async initialize() {
+        await this.start();
+
+        this.physics = new Physics(this.scene);
+
+        this.scene.traverse(node => {
+            const model = node.getComponentOfType(Model);
+            if (!model) {
+                return;
+            }
+
+            const boxes = model.primitives.map(primitive => calculateAxisAlignedBoundingBox(primitive.mesh));
+            node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
+        });
+
+        this.initSounds();
+    }
+
     initLights() {
+        // adds lights to torches - looks terrific
         const orange = [255, 60, 0];
 
         for (let i = 0; i < this.loader.gltf.nodes.length; i++) {
@@ -228,179 +229,6 @@ export class Game {
         }
 
         this.scene.addChild(this.player);
-    }
-
-    assignObjects() {
-        // assign gameObject roles
-        for (let i = 0; i < this.loader.gltf.nodes.length; i++) {
-            const blendObject = this.loader.gltf.nodes[i];
-            const blendObjectNode = this.scene.children[i]
-
-            // assign playerModelObjects
-            if (blendObject.name.includes("PlayerObject")) {
-                this.playerModelObjects.push(blendObjectNode);
-            }
-
-            // assign checkPoints
-            if (blendObject.name.includes("CheckPoint")) {
-                const valueArray = blendObject.name.split("_");
-                blendObjectNode.checkPointIndex = parseInt(valueArray[0].split("")[valueArray[0].length - 1]);
-
-                const yaw = valueArray[1].split("")[valueArray[1].length - 1] * Math.PI;
-                //const yaw = Math.PI;
-                //const pitch = 0;
-
-                this.checkPointMap.set(blendObjectNode.checkPointIndex, new RespawnPoint(blendObject, yaw))
-                continue;
-            }
-
-            // assign stairs
-            if (blendObject.name.includes("Stairs")) {
-                blendObjectNode.isStairs = true;
-                continue;
-            }
-
-            // assign teleports
-            if (blendObject.name.includes("Teleport")) {
-                blendObjectNode.isTeleport = true;
-                blendObjectNode.teleportToCheckpointIndex = blendObject.name.split("")[blendObject.name.length - 1];
-                continue;
-            }
-
-            // assign orbHolders
-            if (blendObject.name.includes("OrbHolder")) {
-                const orbHolderNum = blendObject.name.split("")[blendObject.name.length - 1];
-                const orbHolder = new OrbHolder(blendObjectNode.getComponentOfType(Transform), this.loader);
-                orbHolder.node = blendObjectNode;
-                orbHolder.orbDropEnabled = blendObject.name.includes("Drop");
-                blendObjectNode.addComponent(orbHolder);
-                this.orbHolderMap.set(orbHolderNum, blendObjectNode)
-                continue;
-            }
-
-            // assign orbs
-            if (blendObject.name.includes("Orb_")) {
-                const orbNum = blendObject.name.split("")[blendObject.name.length - 1];
-                const orb = new Orb(blendObjectNode.getComponentOfType(Transform), orbNum);
-                blendObjectNode.addComponent(orb);
-                this.orbArray.push(blendObjectNode);
-                continue;
-            }
-
-            // assign traps
-            if (blendObject.name.includes("Trap")) blendObjectNode.isTrap = true;
-
-            // assign moving objects
-            if (blendObject.name.includes("Moving")) {
-                let maxTranslationDistance = 1;
-                let movingObjectTranslation = [0, 0, 0];
-                let moveBothDirections = !blendObject.name.includes("OneDir");
-                let movingSinceCheckPoint = 0;
-                let velocity = 0;
-                let canMovePlayer = false;
-
-                if (blendObject.name.includes("UP")) {
-                    movingObjectTranslation = [0, 1, 0];
-                    velocity = 0.6;
-                }
-                else if (blendObject.name.includes("DOWN")) {
-                    movingObjectTranslation = [0, -1, 0];
-                    velocity = 0.6;
-                }
-                else if (blendObject.name.includes("LEFT")) {
-                    movingObjectTranslation = [-1, 0, 0];
-                    velocity = 0.4;
-                }
-                else if (blendObject.name.includes("RIGHT")) {
-                    movingObjectTranslation = [1, 0, 0];
-                    velocity = 0.4;
-                }
-                else if (blendObject.name.includes("FORWARD")) {
-                    movingObjectTranslation = [0, 0, 1];
-                    velocity = 0.4;
-                }
-                else if (blendObject.name.includes("BACKWARDS")) {
-                    movingObjectTranslation = [0, 0, -1];
-                    velocity = 0.4;
-                }
-                else if (blendObject.name.includes("CHASETRAP")) {
-                    maxTranslationDistance = 30;
-                    movingObjectTranslation = [0, 0, -1];
-                    velocity = 1.4;
-                }
-
-                if (blendObject.name.includes("MovingOnSpawn")) {
-                    movingSinceCheckPoint = parseInt(blendObject.name.split("MovingOnSpawn")[1].split("")[0]);
-                    this.OnRespawnMovingObjectNodes.push(blendObjectNode);
-                }
-
-                if (blendObject.name.includes("Platform")) {
-                    canMovePlayer = true;
-                    blendObjectNode.isEntityPlatform = true;
-                }
-
-                blendObjectNode.addComponent(new Entity(blendObjectNode.getComponentOfType(Transform), movingObjectTranslation, maxTranslationDistance, moveBothDirections, velocity, movingSinceCheckPoint, canMovePlayer));
-            }
-
-            // assign unlockable doors
-            if (blendObject.name.includes("UnlockDoor")) {
-                blendObjectNode.dropOrbHolderUnlockIndex = blendObject.name.split("")[blendObject.name.length - 1];
-
-                // this object will not move until unlocked, therefore disable movement
-                const entity = blendObjectNode.getComponentOfType(Entity);
-                entity.movingEnabled = false;
-                entity.velocity = 1.5;
-                entity.reasignMaxDistance(2.8);
-                this.unlockableDoorArray.push(blendObjectNode);
-            }
-        }
-    }
-
-    update(time, dt) {
-        if (pause) return;
-        this.scene.traverse(node => {
-            for (const component of node.components) {
-                component.update?.(time, dt);
-            }
-        });
-        this.physics.update(time, dt);  // handle collisions
-        this.updateSoundParameters();
-    }
-
-    render() {
-        this.renderer.render(this.scene, this.camera, this.skybox, this.lights);
-        this.updateFPS();
-    }
-
-    resize({ displaySize: { width, height } }) {
-        this.camera.getComponentOfType(Camera).aspect = width / height;
-        if (this.renderer instanceof Renderer) {
-            this.renderer.resize(width, height);
-        }
-    }
-
-    updateSoundParameters() {
-        const playerTransform = this.player.getComponentOfType(Transform);
-        soundController.updateListenerPosition(...playerTransform.translation)
-        soundController.updateListenerOrientation(playerTransform.rotation);
-    }
-
-    async initialize() {
-        await this.start();
-
-        this.physics = new Physics(this.scene);
-
-        this.scene.traverse(node => {
-            const model = node.getComponentOfType(Model);
-            if (!model) {
-                return;
-            }
-
-            const boxes = model.primitives.map(primitive => calculateAxisAlignedBoundingBox(primitive.mesh));
-            node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
-        });
-
-        this.initSounds();
     }
 
     initSounds() {
@@ -529,6 +357,180 @@ export class Game {
                 }),
             ],
         }));
+    }
+
+    createLights(n) {
+        const colors = [
+            [255, 0, 0],
+            [0, 255, 0],
+            [0, 0, 255],
+            [255, 255, 0],  // Yellow
+            [200, 0, 200],  // Magenta
+            [0, 200, 200],  // Cyan
+        ];
+
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < 3; j++) {
+                const light = new Node();
+
+                let intensity = 4;
+                const translation = [j * 3 - 3, 2, -2 * i];
+                if (translation[2] >= -16) {
+                    translation[1] = 1.8;
+                    if (translation[2] < -8) {
+                        intensity = 0.8;
+                    } else {
+                        intensity = 2;
+                    }
+                    if (translation[0] !== 0 && translation[2] < -8) {
+                        continue;
+                    }
+                    if (translation[2] === -16) {
+                        translation[2] = -15.5;
+                    }
+                }
+                light.addComponent(new Transform({
+                    translation: translation,
+                }));
+
+                const newLight = new Light({
+                    color: colors[(i * 3 + j) % colors.length],  // assign a different color to each light
+                    intensity: intensity,
+                    attenuation: [0.001, 0, 0.1]
+                });
+
+                light.addComponent(newLight);
+
+                this.lights.push(light);
+            }
+        }
+    }
+
+    assignObjects() {
+        // assign gameObject roles
+        for (let i = 0; i < this.loader.gltf.nodes.length; i++) {
+            const blendObject = this.loader.gltf.nodes[i];
+            const blendObjectNode = this.scene.children[i]
+
+            // assign playerModelObjects
+            if (blendObject.name.includes("PlayerObject")) {
+                this.playerModelObjects.push(blendObjectNode);
+            }
+
+            // assign checkPoints
+            if (blendObject.name.includes("CheckPoint")) {
+                const valueArray = blendObject.name.split("_");
+                blendObjectNode.checkPointIndex = parseInt(valueArray[0].split("")[valueArray[0].length - 1]);
+
+                const yaw = valueArray[1].split("")[valueArray[1].length - 1] * Math.PI;
+                //const yaw = Math.PI;
+                //const pitch = 0;
+
+                this.checkPointMap.set(blendObjectNode.checkPointIndex, new RespawnPoint(blendObject, yaw))
+                continue;
+            }
+
+            // assign stairs
+            if (blendObject.name.includes("Stairs")) {
+                blendObjectNode.isStairs = true;
+                continue;
+            }
+
+            // assign teleports
+            if (blendObject.name.includes("Teleport")) {
+                blendObjectNode.isTeleport = true;
+                blendObjectNode.teleportToCheckpointIndex = blendObject.name.split("")[blendObject.name.length - 1];
+                continue;
+            }
+
+            // assign orbHolders
+            if (blendObject.name.includes("OrbHolder")) {
+                const orbHolderNum = blendObject.name.split("")[blendObject.name.length - 1];
+                const orbHolder = new OrbHolder(blendObjectNode.getComponentOfType(Transform), this.loader);
+                orbHolder.node = blendObjectNode;
+                orbHolder.orbDropEnabled = blendObject.name.includes("Drop");
+                blendObjectNode.addComponent(orbHolder);
+                this.orbHolderMap.set(orbHolderNum, blendObjectNode)
+                continue;
+            }
+
+            // assign orbs
+            if (blendObject.name.includes("Orb_")) {
+                const orbNum = blendObject.name.split("")[blendObject.name.length - 1];
+                const orb = new Orb(blendObjectNode.getComponentOfType(Transform), orbNum);
+                blendObjectNode.addComponent(orb);
+                this.orbArray.push(blendObjectNode);
+                continue;
+            }
+
+            // assign traps
+            if (blendObject.name.includes("Trap")) blendObjectNode.isTrap = true;
+
+            // assign moving objects
+            if (blendObject.name.includes("Moving")) {
+                let maxTranslationDistance = 1;
+                let movingObjectTranslation = [0, 0, 0];
+                let moveBothDirections = !blendObject.name.includes("OneDir");
+                let movingSinceCheckPoint = 0;
+                let velocity = 0;
+                let canMovePlayer = false;
+
+                if (blendObject.name.includes("UP")) {
+                    movingObjectTranslation = [0, 1, 0];
+                    velocity = 0.6;
+                }
+                else if (blendObject.name.includes("DOWN")) {
+                    movingObjectTranslation = [0, -1, 0];
+                    velocity = 0.6;
+                }
+                else if (blendObject.name.includes("LEFT")) {
+                    movingObjectTranslation = [-1, 0, 0];
+                    velocity = 0.4;
+                }
+                else if (blendObject.name.includes("RIGHT")) {
+                    movingObjectTranslation = [1, 0, 0];
+                    velocity = 0.4;
+                }
+                else if (blendObject.name.includes("FORWARD")) {
+                    movingObjectTranslation = [0, 0, 1];
+                    velocity = 0.4;
+                }
+                else if (blendObject.name.includes("BACKWARDS")) {
+                    movingObjectTranslation = [0, 0, -1];
+                    velocity = 0.4;
+                }
+                else if (blendObject.name.includes("CHASETRAP")) {
+                    maxTranslationDistance = 30;
+                    movingObjectTranslation = [0, 0, -1];
+                    velocity = 1.4;
+                }
+
+                if (blendObject.name.includes("MovingOnSpawn")) {
+                    movingSinceCheckPoint = parseInt(blendObject.name.split("MovingOnSpawn")[1].split("")[0]);
+                    this.OnRespawnMovingObjectNodes.push(blendObjectNode);
+                }
+
+                if (blendObject.name.includes("Platform")) {
+                    canMovePlayer = true;
+                    blendObjectNode.isEntityPlatform = true;
+                }
+
+                blendObjectNode.addComponent(new Entity(blendObjectNode.getComponentOfType(Transform), movingObjectTranslation, maxTranslationDistance, moveBothDirections, velocity, movingSinceCheckPoint, canMovePlayer));
+            }
+
+            // assign unlockable doors
+            if (blendObject.name.includes("UnlockDoor")) {
+                blendObjectNode.dropOrbHolderUnlockIndex = blendObject.name.split("")[blendObject.name.length - 1];
+
+                // this object will not move until unlocked, therefore disable movement
+                const entity = blendObjectNode.getComponentOfType(Entity);
+                entity.movingEnabled = false;
+                entity.velocity = 1.5;
+                // entity.reasignMaxDistance(2.8);
+                entity.assignMaxDistance(2.8)
+                this.unlockableDoorArray.push(blendObjectNode);
+            }
+        }
     }
 
     updateFPS() {
