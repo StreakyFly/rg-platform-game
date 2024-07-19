@@ -45,6 +45,9 @@ export const mouseSensitivity = getMouseSensitivity();
 
 
 async function startGame() {
+    console.log("Lag/low FPS? If you are running the game on a laptop with two GPU's (integrated and normal), " +
+        "go to Graphics settings, select your browser app and choose High performance. Then restart the entire browser," +
+        " not just that one tab.")
     showLoadingScreen();
     isLoadingActive = true;
     updateLoading();
