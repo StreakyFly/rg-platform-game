@@ -16,7 +16,9 @@ export class SoundController {
     }
 
     getSoundUrl(name) {
-        return `../../game/assets/audio/${name}.mp3`;
+        // return `../../game/assets/audio/${name}.mp3`;
+        return `game/assets/audio/${name}.mp3`;
+
     }
 
     playSound(id, options = {}) {

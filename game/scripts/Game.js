@@ -56,7 +56,8 @@ export class Game {
     }
 
     async start() {
-        await this.loader.load('../../game/assets/models/level.gltf');
+        // await this.loader.load('../../game/assets/models/level.gltf');
+        await this.loader.load('game/assets/models/level.gltf');
 
         this.scene = this.loader.loadScene(this.loader.defaultScene);
 
