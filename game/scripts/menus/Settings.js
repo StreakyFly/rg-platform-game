@@ -29,16 +29,18 @@ export function saveSettings() {
 }
 
 export function getMouseSensitivity() {
-    const volume = parseInt(localStorage.getItem('mouseSensitivity'));
-    if (isNaN(volume) || volume == null) {
+    let sensitivity = parseInt(localStorage.getItem('mouseSensitivity'));
+    if (isNaN(sensitivity) || sensitivity == null) {
+        sensitivity = 50;
         localStorage.setItem('mouseSensitivity', "50");
     }
-    return volume;
+    return sensitivity;
 }
 
 export function getVolume() {
-    const volume = parseInt(localStorage.getItem('volume'));
+    let volume = parseInt(localStorage.getItem('volume'));
     if (isNaN(volume) || volume == null) {
+        volume = 50;
         localStorage.setItem('volume', "50");
     }
     return volume;
