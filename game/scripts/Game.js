@@ -294,7 +294,8 @@ export class Game {
         this.player.isDynamic = true;
 
         const emissionTexturePortal = new Texture({
-            image: await new ImageLoader().load('../../game/assets/models/portal.png'),
+            // image: await new ImageLoader().load('../../game/assets/models/portal.png'),
+            image: await new ImageLoader().load('game/assets/models/portal.png'),
             sampler: new Sampler({
                 minFilter: 'nearest',
                 magFilter: 'nearest',
@@ -337,8 +338,10 @@ export class Game {
 
     async initSky() {
         const [cubeMesh, envmapImage] = await Promise.all([
-            new JSONLoader().loadMesh('../../../common/models/cube.json'),
-            new ImageLoader().load('../../game/assets/images/sky.jpg'),
+            // new JSONLoader().loadMesh('../../../common/models/cube.json'),
+            new JSONLoader().loadMesh('common/models/cube.json'),
+            // new ImageLoader().load('../../game/assets/images/sky.jpg'),
+            new ImageLoader().load('game/assets/images/sky.jpg'),
         ]);
 
         this.skybox = new Node();
